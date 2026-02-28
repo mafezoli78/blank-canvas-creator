@@ -1,3 +1,4 @@
+import type { Database } from '@/integrations/supabase/types';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,18 +7,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export interface Conversation {
-  id: string;
-  user1_id: string;
-  user2_id: string;
-  place_id: string;
-  origem_wave_id: string | null;
-  criado_em: string;
-  ativo: boolean;
-  encerrado_por: string | null;
-  encerrado_em: string | null;
-  encerrado_motivo: string | null;
-}
+type Conversation = Database['public']['Tables']['conversations']['Row'];
 
 export interface ConversationWithDetails extends Conversation {
   otherUser: {
