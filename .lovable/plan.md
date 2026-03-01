@@ -1,51 +1,76 @@
-## Plan: Fix build error + Configure Edge Function secret + Refactor search-places
+## Plan: Nova Tela de Login Katuu
 
-### 1. Fix build error in `src/hooks/useWaves.ts`
+### Visão Geral
 
-The `Conversation` interface (line 36-47) is missing `reinteracao_permitida_em` and has `encerrado_motivo` typed too narrowly. Add the missing field and align the type with the DB schema:
+Redesenhar `Auth.tsx` para seguir a referência visual (fundo gradiente full-screen, 3 botões de login, termos no rodapé) e implementar fluxo de e-mail em etapas separadas. Substituir Instagram por Apple Sign In.
 
-```typescript
-export interface Conversation {
-  id: string;
-  user1_id: string;
-  user2_id: string;
-  place_id: string;
-  origem_wave_id: string | null;
-  criado_em: string;
-  ativo: boolean;
-  encerrado_por: string | null;
-  encerrado_em: string | null;
-  encerrado_motivo: "manual" | "presence_end" | null;
-  reinteracao_permitida_em: string | null;
-}
-```
+### Questão Importante: Apple Sign In
 
-### 2. Add Supabase secrets
+Supabase suporta Apple OAuth, mas requer configuração manual no Apple Developer Console e no dashboard do Supabase. Você precisará:
 
-Use the secrets tool to set:
+1. Criar um Services ID no Apple Developer Console
+2. Gerar chave privada (.p8)
+3. Configurar redirect URL do Supabase
+4. Inserir Client ID e Client Secret no Supabase (Authentication → Providers → Apple)
 
-- `FOURSQUARE_API_KEY` = `4BY3B3MUNVX4GF3GN2UPPCCSBLU3VIPGNPTPPRPD1XXCQAKE`
-- `PLACE_PROVIDER` = `foursquare`
+O botão será implementado no código, mas só funcionará após essa configuração externa. Google OAuth também precisa estar configurado no dashboard do Supabase.
 
-### 3. Refactor Edge Function `search-places`
+---
 
-The current function is 799 lines with all Foursquare logic inline. The user wants a provider-based architecture. However, Supabase Edge Functions do not support subdirectories/multiple files per function — all code must be in `index.ts`.
+### Alterações
 
-**Approach**: Keep everything in `supabase/functions/search-places/index.ts` but organize the code with clear provider sections:
+#### 1. Redesenhar `src/pages/Auth.tsx`
 
-- Define `PlaceProvider` interface and `StandardPlace` type at the top
-- Implement `FoursquareProvider` class (wrapping the existing logic)
-- Implement `MapboxProvider` stub class
-- Read `PLACE_PROVIDER` env var to select provider
-- Keep the existing category filtering, DB persistence, and response format unchanged
+Substituir completamente o layout atual por uma tela full-screen com:
 
-The existing curadoria logic (ALLOWED/EXCLUDED category IDs) stays as-is since it's Foursquare-specific. The provider abstraction will handle the API call and mapping to standard format, while filtering remains provider-specific.
+- Fundo gradiente (`#124854` → `#1F3A5F`) sem card branco
+- Logo + ícone centralizados (assets existentes)
+- "Bem-vindo de volta" / "Entre na sua conta para continuar" em branco
+- 3 botões brancos arredondados com ícone à esquerda:
+  - "Continuar com Google" → `signInWithOAuth({ provider: 'google' })`
+  - "Continuar com Apple" → `signInWithOAuth({ provider: 'apple' })`
+  - "Continuar com e-mail" → navega para estado de e-mail
+- Rodapé: "Ao continuar, você concorda com os **Termos** e com a **Política de privacidade**" (links para `/terms` e `/privacy`)
 
-### Technical details
+Internamente usa state machine com `step`: `'main'` | `'email'` | `'password'` | `'register'` — tudo dentro de `Auth.tsx`, sem criar arquivos separados de página (mais simples, mesma UX).
 
-- Edge Functions only support a single `index.ts` file — no `providers/` subfolder imports
-- The `FOURSQUARE_API_KEY` error will be resolved by adding the secret via Supabase
-- The provider pattern uses a factory function reading `PLACE_PROVIDER` env var
-- MapboxProvider will return a controlled JSON error:
-  return new Response(JSON.stringify({ error: "Mapbox provider not implemented yet" }), { status: 501 });
-- Response contract with frontend remains: `{ places: Place[], source: string }`
+- **Step email**: campo e-mail + "Continuar" + "Voltar". Ao submeter, chamar uma RPC segura check_email_exists no Supabase (criada previamente com SECURITY DEFINER) que retorna boolean indicando se o e-mail já possui conta. Se true → navegar para step 'password'. Se false → navegar para step 'register'.
+- **Step password**: campo senha + "Entrar" + "Esqueci minha senha" + "Voltar"
+- **Step register**: campos nome, e-mail (pré-preenchido, disabled), senha + "Criar conta"
+
+#### 2. Atualizar `src/contexts/AuthContext.tsx`
+
+Adicionar método `signInWithOAuth(provider: string)` ao contexto para Google e Apple.
+
+#### 3. Criar `src/pages/Terms.tsx` e `src/pages/Privacy.tsx`
+
+Páginas simples com conteúdo placeholder institucional, estilizadas com fundo branco e texto escuro. Facilmente editáveis.
+
+#### 4. Adicionar rotas em `src/App.tsx`
+
+- `/terms` → `Terms.tsx`
+- `/privacy` → `Privacy.tsx`
+
+#### 5. Criar `src/pages/ResetPassword.tsx`
+
+Página para redefinição de senha (necessária para o fluxo "Esqueci minha senha"):
+
+- Verifica `type=recovery` na URL
+- Formulário para nova senha
+- Chama `supabase.auth.updateUser({ password })`
+
+Rota: `/reset-password`
+
+---
+
+### Arquivos modificados
+
+- `src/pages/Auth.tsx` — redesign completo
+- `src/contexts/AuthContext.tsx` — adicionar `signInWithOAuth`
+- `src/App.tsx` — novas rotas
+
+### Arquivos criados
+
+- `src/pages/Terms.tsx`
+- `src/pages/Privacy.tsx`
+- `src/pages/ResetPassword.tsx`
