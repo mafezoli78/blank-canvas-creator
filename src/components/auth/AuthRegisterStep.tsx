@@ -27,7 +27,7 @@ export function AuthRegisterStep({ email, onBack }: AuthRegisterStepProps) {
       return;
     }
     setLoading(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, { nome });
     setLoading(false);
     if (error) {
       toast({
