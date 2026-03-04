@@ -1,81 +1,159 @@
-## Plan: Onboarding Gate Refactoring
+## Diagnóstico Estrutural — Tela de Login Legada Intermitente
 
-### Summary
+Causa Raiz Identificada
 
-Remove onboarding from the bootstrap flow. Instead, gate presence-activation actions behind a profile-completeness check using a modal.
+O problema é uma race condition clássica no bootstrap de autenticação. Veja o fluxo de execução:
 
-### Changes
+Plain text
 
-**1. `src/pages/Splash.tsx**` — Remove onboarding redirect
+Copiar código
 
-- Remove `useProfile` import and usage
-- Remove `profileLoading` and `isProfileComplete` logic
-- Simplify: `!user → /auth`, `user → /location`
-- Remove dependency on `profile` in useEffect
+1. App monta → AuthProvider monta → loading = true, user = null
 
-**2. `src/App.tsx**` — Change default authenticated route
+2. onAuthStateChange registrado (assíncrono, aguarda callback)
 
-- Change fallback `<Navigate to="/home">` to `<Navigate to="/location">`
-- Keep `/onboarding` route available (user can still navigate there explicitly)
+3. getSession() disparado (assíncrono, aguarda resposta da rede)
 
-**3. `src/components/auth/AuthRegisterStep.tsx**` — After signup, go to `/location` instead of `/onboarding`
+4. ENQUANTO ISSO, a rota atual renderiza normalmente
 
-- Change `navigate('/onboarding')` to `navigate('/location')`
-- Update toast message accordingly
+O problema central: A decisão de qual rota renderizar ocorre antes de loading estabilizar, permitindo redirecionamentos indevidos durante o bootstrap.
 
-**4. New: `src/components/profile/ProfileGateModal.tsx**` — Modal component
+Pontos Exatos de Falha
 
-- Receives `open` and `onClose` props
-- Displays message: "Complete seu perfil para continuar"
-- Explains why (visibility to other users)
-- "Completar perfil" button → navigates to `/onboarding`
-- "Agora não" button → closes modal
+1. Auth.tsx — Redireciona baseado apenas em user, sem considerar loading.
 
-**5. New: `src/hooks/useProfileGate.ts**` — Centralized gate hook
+2. Home.tsx — Redireciona baseado apenas em user, sem considerar loading.
 
-- Uses `useProfile` internally
-- Exposes `{ isProfileComplete, requireProfile }` where:
-  - `isProfileComplete`: boolean (true when nome + data_nascimento + interests exist)
-  - `requireProfile()`: returns true if complete, false + opens modal if not
-- Manages modal open state internally
-- Exposes `{ isOpen, openModal, closeModal }`
-- The modal component must be rendered explicitly in the page and receive those props
+3. Splash.tsx — Atua apenas na rota /, não protege acessos diretos a /home ou /auth.
 
-**6. `src/pages/Location.tsx**` — Add profile gate before presence activation
+4. AuthContext.tsx — O duplo setLoading(false) não é a causa raiz e não precisa ser alterado neste momento.
 
-- Import `useProfileGate`
-- Before `handleActivatePresence` and `handleSelectPlace`, call `requireProfile()`
-- If returns false, abort the action (modal shows automatically)
-- Render `ProfileGateModal` in the JSX
+Cenário de Reprodução
 
-**7. `src/pages/Onboarding.tsx**` — Update UX
+Plain text
 
-- Keep a defensive guard:
-  - If profile is already complete, redirect to `/location`
-  - Only allow onboarding to remain open when profile is incomplete
-- Keep the redirect-to-location after successful completion (consistent with new default authenticated route)
-- Update title to "Complete seu perfil para começar"
-- Add explicit "obrigatório" labels on nome and data_nascimento
-- Add explanation text about why data is needed
+Copiar código
 
-### Files Modified
+1. Usuário logado abre app em /home
 
+2. AuthProvider inicia: loading=true, user=null
 
-| File                                          | Action                                 |
-| --------------------------------------------- | -------------------------------------- |
-| `src/pages/Splash.tsx`                        | Remove profile check, simplify routing |
-| `src/App.tsx`                                 | Change default route to `/location`    |
-| `src/components/auth/AuthRegisterStep.tsx`    | Navigate to `/location` after signup   |
-| `src/components/profile/ProfileGateModal.tsx` | **New** — modal component              |
-| `src/hooks/useProfileGate.ts`                 | **New** — centralized gate hook        |
-| `src/pages/Location.tsx`                      | Add gate before presence actions       |
-| `src/pages/Onboarding.tsx`                    | Remove auto-redirect, improve UX copy  |
+3. Home.tsx executa useEffect → !user é true → navigate('/auth')
 
+4. Auth.tsx renderiza completamente
 
-### No regressions
+5. getSession resolve → user preenchido → Auth redireciona para /home
 
-- Google OAuth unaffected (goes through Splash → `/location`)
-- Email signup → `/location` (instead of `/onboarding`)
-- No circular dependencies — `useProfileGate` only depends on `useProfile`
-- No timeouts or artificial delays
-- `/onboarding` remains accessible, just not forced
+Em conexões lentas, a etapa 4 pode permitir interação indevida.
+
+Proposta de Correção Estrutural
+
+Abordagem (correção centralizada)
+
+Bloquear a renderização de qualquer rota enquanto loading === true, no nível do componente que controla as rotas principais (ex: App.tsx).
+
+A proteção deve ser única e centralizada.
+
+Alteração Única — App.tsx (ou componente que contém <Routes>)
+
+Adicionar no topo do componente que define as rotas:
+
+TypeScript
+
+Copiar código
+
+const { user, loading } = useAuth();
+
+if (loading) {
+
+  return null; // ou <Splash />
+
+}
+
+E estruturar as rotas condicionalmente:
+
+TypeScript
+
+Copiar código
+
+return (
+
+  <Routes>
+
+    {user ? (
+
+      <>
+
+        <Route path="/home" element={<Home />} />
+
+        <Route path="/profile" element={<Profile />} />
+
+        <Route path="/waves" element={<Waves />} />
+
+        <Route path="/chat/:id" element={<Chat />} />
+
+        <Route path="/location/:id" element={<Location />} />
+
+        <Route path="/onboarding" element={<Onboarding />} />
+
+        <Route path="*" element={<Navigate to="/home" replace />} />
+
+      </>
+
+    ) : (
+
+      <>
+
+        <Route path="/auth" element={<Auth />} />
+
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+
+      </>
+
+    )}
+
+  </Routes>
+
+);
+
+O que NÃO deve ser feito
+
+Não espalhar if (loading) return null em múltiplas páginas.
+
+Não alterar AuthContext.tsx neste momento.
+
+Não modificar lógica de onAuthStateChange.
+
+O problema está no consumo do estado, não na produção do estado.
+
+Resumo das Alterações
+
+Arquivo
+
+Alteração
+
+App.tsx (ou root de rotas)
+
+Adicionar guard global if (loading) return null antes de renderizar <Routes>
+
+Nenhuma alteração necessária em:
+
+AuthContext.tsx
+
+Auth.tsx
+
+Home.tsx
+
+Outras páginas
+
+Impacto
+
+Elimina completamente a race condition
+
+Remove renderização indevida da tela legada
+
+Mantém arquitetura limpa
+
+Evita duplicação de lógica
+
+Zero impacto no banco ou UX

@@ -39,7 +39,7 @@ export default function Onboarding() {
     if (!user) {
       navigate('/auth', { replace: true });
     } else if (isProfileComplete()) {
-      navigate('/home', { replace: true });
+      navigate('/location', { replace: true });
     }
   }, [user, isProfileComplete, navigate]);
 
@@ -134,7 +134,7 @@ export default function Onboarding() {
       if (interestsError) throw interestsError;
 
       toast({ title: 'Perfil criado com sucesso!' });
-      navigate('/home', { replace: true });
+      navigate('/location', { replace: true });
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({ variant: 'destructive', title: 'Erro ao salvar perfil' });
@@ -167,8 +167,10 @@ export default function Onboarding() {
         {step === 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>Vamos começar!</CardTitle>
-              <CardDescription>Nos conte um pouco sobre você</CardDescription>
+              <CardTitle>Complete seu perfil para começar</CardTitle>
+              <CardDescription>
+                Esses dados são necessários para que você possa interagir com outras pessoas nos locais.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Avatar upload */}
@@ -196,7 +198,7 @@ export default function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome *</Label>
+                <Label htmlFor="nome">Nome <span className="text-destructive">*</span></Label>
                 <Input
                   id="nome"
                   placeholder="Como você quer ser chamado?"
@@ -207,7 +209,7 @@ export default function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dataNascimento">Data de nascimento *</Label>
+                <Label htmlFor="dataNascimento">Data de nascimento <span className="text-destructive">*</span></Label>
                 <Input
                   id="dataNascimento"
                   type="date"
