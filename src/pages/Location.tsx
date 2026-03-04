@@ -286,37 +286,35 @@ export default function Location() {
       let error: Error | null = null;
       let presenceId: string | null = null;
       const trimmedExpression = expressionText.trim() || undefined;
-
-try {
-  let result;
-  if (selectedPlaceId) {
-    result = await activatePresenceAtPlace(selectedPlaceId, DEFAULT_INTENTION_ID, trimmedExpression);
-  } else if (newPlaceName.trim() && userCoords) {
-    result = await createTemporaryPlace(
-      newPlaceName.trim(),
-      userCoords.lat,
-      userCoords.lng,
-      DEFAULT_INTENTION_ID,
-      trimmedExpression
-    );
-  } else {
-    error = new Error('Nenhum local selecionado');
-    return;
-  }
-  
-  error = result.error;
-  presenceId = result.presenceId;
-} catch (err: any) {
-  if (err.message === 'PROFILE_LOADING') {
-    return; // Silencia, spinner continua
-  }
-  if (err.message === 'PROFILE_INCOMPLETE') {
-    setShowProfileGate(true);
-    return;
-  }
-  throw err; // Outros erros são reais
-}
-
+      
+      try {
+        let result;
+        if (selectedPlaceId) {
+          result = await activatePresenceAtPlace(selectedPlaceId, DEFAULT_INTENTION_ID, trimmedExpression);
+        } else if (newPlaceName.trim() && userCoords) {
+          result = await createTemporaryPlace(
+            newPlaceName.trim(),
+            userCoords.lat,
+            userCoords.lng,
+            DEFAULT_INTENTION_ID,
+            trimmedExpression
+          );
+        } else {
+          error = new Error('Nenhum local selecionado');
+          return;
+        }
+        error = result.error;
+        presenceId = result.presenceId;
+      } catch (err: any) {
+        if (err.message === 'PROFILE_LOADING') {
+          return; // Silencia, spinner continua
+        }
+        if (err.message === 'PROFILE_INCOMPLETE') {
+          setShowProfileGate(true);
+          return;
+        }
+        throw err; // Outros erros são reais
+      }
 
       if (error) {
         if (error.message === 'PROFILE_INCOMPLETE') {
