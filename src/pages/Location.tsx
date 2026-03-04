@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePresence, NearbyTemporaryPlace } from '@/hooks/usePresence';
+import { useProfileGate } from '@/hooks/useProfileGate';
+import { ProfileGateModal } from '@/components/profile/ProfileGateModal';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +32,7 @@ export default function Location() {
     presenceRadiusMeters,
     currentPresence
   } = usePresence();
+  const { requireProfile, isOpen: profileGateOpen, closeModal: closeProfileGate } = useProfileGate();
 
   const [step, setStep] = useState<'permission' | 'detecting' | 'select' | 'create_temp' | 'confirm_temp' | 'expression' | 'selfie'>('permission');
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied' | 'blocked'>('prompt');
@@ -208,6 +211,7 @@ export default function Location() {
   }, [isRequestingPermission, toast]);
 
   const handleSelectPlace = (placeId: string) => {
+    if (!requireProfile()) return;
     setSelectedPlaceId(placeId);
     setStep('expression');
   };
@@ -238,6 +242,7 @@ export default function Location() {
   };
 
   const handleCreateTemporaryPlace = async () => {
+    if (!requireProfile()) return;
     if (!newPlaceName.trim() || !userCoords) {
       toast({ variant: 'destructive', title: 'Preencha o nome do local' });
       return;
@@ -620,6 +625,7 @@ export default function Location() {
 
         }
       </div>
+      <ProfileGateModal open={profileGateOpen} onClose={closeProfileGate} />
     </MobileLayout>);
 
 }
