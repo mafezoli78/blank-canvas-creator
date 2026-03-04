@@ -819,6 +819,7 @@ export function usePresence() {
     currentPresence,
     currentPlace, // Renamed from currentLocation
     loading,
+    profileLoading,
     placesLoading,
     remainingTime,
     lastEndReason,
