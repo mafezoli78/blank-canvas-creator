@@ -1,3 +1,4 @@
+import { useProfile } from '@/hooks/useProfile';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,6 +54,7 @@ const TEMPORARY_PLACE_DURATION_MS = 6 * 60 * 60 * 1000;
 
 export function usePresence() {
   const { user } = useAuth();
+  const { isProfileComplete } = useProfile();
   const [intentions, setIntentions] = useState<Intention[]>([]);
   const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
   const [nearbyTemporaryPlaces, setNearbyTemporaryPlaces] = useState<NearbyTemporaryPlace[]>([]);
@@ -557,6 +559,9 @@ export function usePresence() {
   // Activate presence using centralized RPC (atomic, with concurrency lock)
   // The RPC handles: cleanup of previous presence, wave expiration, and new presence creation
   const activatePresenceAtPlace = async (placeId: string, intentionId: string, assuntoAtual?: string) => {
+    if (!isProfileComplete()) {
+      throw new Error('PROFILE_INCOMPLETE');
+    }
     if (!user) return { error: new Error('Not authenticated'), presenceId: null };
 
     if (!placeId) {
