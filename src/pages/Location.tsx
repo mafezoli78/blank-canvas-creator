@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePresence, NearbyTemporaryPlace } from '@/hooks/usePresence';
 import { useProfileGate } from '@/hooks/useProfileGate';
