@@ -21,6 +21,7 @@ import * as cameraService from '@/services/cameraService';
 export default function Location() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const {
     intentions,
@@ -33,7 +34,7 @@ export default function Location() {
     currentPresence
   } = usePresence();
   const [showProfileGate, setShowProfileGate] = useState(false);
-  const { requireProfile, isOpen: profileGateOpen, openModal: openProfileGate, closeModal: closeProfileGate } = useProfileGate();
+  const { requireProfile, isOpen: profileGateOpen, pendingAction: gatePendingAction, openModal: openProfileGate, closeModal: closeProfileGate } = useProfileGate();
   const [step, setStep] = useState<'permission' | 'detecting' | 'select' | 'create_temp' | 'confirm_temp' | 'expression' | 'selfie'>('permission');
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied' | 'blocked'>('prompt');
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
@@ -211,7 +212,7 @@ export default function Location() {
   }, [isRequestingPermission, toast]);
 
   const handleSelectPlace = (placeId: string) => {
-    if (!requireProfile()) return;
+    if (!requireProfile({ type: 'selectPlace', placeId })) return;
     setSelectedPlaceId(placeId);
     setStep('expression');
   };
@@ -242,7 +243,7 @@ export default function Location() {
   };
 
   const handleCreateTemporaryPlace = async () => {
-    if (!requireProfile()) return;
+    if (!requireProfile({ type: 'createTemp' })) return;
     if (!newPlaceName.trim() || !userCoords) {
       toast({ variant: 'destructive', title: 'Preencha o nome do local' });
       return;
@@ -640,7 +641,7 @@ export default function Location() {
 
         }
       </div>
-      <ProfileGateModal open={profileGateOpen} onClose={closeProfileGate} />
+      <ProfileGateModal open={profileGateOpen} onClose={closeProfileGate} pendingAction={gatePendingAction} />
     </MobileLayout>);
 
 }
