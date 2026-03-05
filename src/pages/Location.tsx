@@ -157,6 +157,23 @@ export default function Location() {
         // Permissions API not supported, stay on permission screen
       });}}, [user, navigate, loading, currentPresence]);
 
+  // Restore pending action from navigation state (after returning from onboarding)
+  useEffect(() => {
+    const state = location.state as any;
+    const pending = state?.pendingAction;
+    if (!pending) return;
+
+    // Clear navigation state to prevent re-trigger on refresh
+    navigate(location.pathname, { replace: true, state: {} });
+
+    if (pending.type === 'selectPlace' && pending.placeId) {
+      setSelectedPlaceId(pending.placeId);
+      setStep('expression');
+    }
+    // For 'createTemp', we just go to expression step since place doesn't exist yet
+    // User will need to re-enter the name
+  }, []); // Only on mount
+
   // Explicit handler: user taps "Permitir localização"
   const handleRequestLocation = useCallback(() => {
     if (isRequestingPermission || hasFetchedRef.current) return;
