@@ -164,22 +164,19 @@ export default function Location() {
     }
   }, [user, navigate, loading, currentPresence]);
 
-  // Restore pending action from navigation state (after returning from onboarding)
+  // Restore pending action from sessionStorage (after returning from onboarding)
   useEffect(() => {
-    const state = location.state as any;
-    const pending = state?.pendingAction;
-    if (!pending) return;
+    const pending = getPendingAction();
+    if (!pending || pending.type !== 'ACTIVATE_PRESENCE') return;
 
-    // Clear navigation state to prevent re-trigger on refresh
-    navigate(location.pathname, { replace: true, state: {} });
+    clearPendingAction();
 
-    if (pending.type === 'selectPlace' && pending.placeId) {
+    if (pending.placeId) {
       setSelectedPlaceId(pending.placeId);
+      if (pending.expressionText) setExpressionText(pending.expressionText);
       setStep('expression');
     }
-    // For 'createTemp', we just go to expression step since place doesn't exist yet
-    // User will need to re-enter the name
-  }, []); // Only on mount
+  }, []);
 
   // Explicit handler: user taps "Permitir localização"
   const handleRequestLocation = useCallback(() => {
