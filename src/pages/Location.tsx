@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { savePendingAction, getPendingAction, clearPendingAction } from '@/utils/pendingAction';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePresence, NearbyTemporaryPlace } from '@/hooks/usePresence';
 import { ProfileGateModal } from '@/components/profile/ProfileGateModal';
