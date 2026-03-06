@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
@@ -23,9 +23,9 @@ export default function Onboarding() {
   const { user } = useAuth();
   const { profile, updateProfile, updateInterests, uploadAvatar, isProfileComplete } = useProfile();
   const navigate = useNavigate();
-  const location = useLocation();
+  
   const { toast } = useToast();
-  const pendingAction = (location.state as any)?.pendingAction;
+  
 
   const [step, setStep] = useState(1);
   const [nome, setNome] = useState('');
@@ -136,7 +136,7 @@ export default function Onboarding() {
       if (interestsError) throw interestsError;
 
       toast({ title: 'Perfil criado com sucesso!' });
-      navigate('/location', { replace: true, state: pendingAction ? { pendingAction } : undefined });
+      navigate('/location', { replace: true });
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({ variant: 'destructive', title: 'Erro ao salvar perfil' });
