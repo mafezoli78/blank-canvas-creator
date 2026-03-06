@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 
 import { useToast } from '@/hooks/use-toast';
+import { DateOfBirthPicker } from '@/components/profile/DateOfBirthPicker';
 import { Camera, X, Check } from 'lucide-react';
 import logoKatu from '@/assets/logo-katuu-oficial.png';
 
@@ -211,16 +212,13 @@ export default function Onboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dataNascimento">Data de nascimento <span className="text-destructive">*</span></Label>
-                <Input
-                  id="dataNascimento"
-                  type="date"
+                <Label>Data de nascimento <span className="text-destructive">*</span></Label>
+                <DateOfBirthPicker
                   value={dataNascimento}
-                  onChange={(e) => {
-                    setDataNascimento(e.target.value);
-                    validateAge(e.target.value);
+                  onChange={(v) => {
+                    setDataNascimento(v);
+                    if (!v.includes('00')) validateAge(v);
                   }}
-                  max={new Date().toISOString().split('T')[0]}
                 />
                 {ageError && (
                   <p className="text-sm text-destructive">{ageError}</p>
