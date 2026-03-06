@@ -14,9 +14,10 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageCropper } from '@/components/profile/ImageCropper';
 import { EmailChangeDialog } from '@/components/profile/EmailChangeDialog';
 import { PasswordChangeDialog } from '@/components/profile/PasswordChangeDialog';
+import { DateOfBirthPicker } from '@/components/profile/DateOfBirthPicker';
 import { 
   Camera, LogOut, Check, User, Heart, Pencil, X, 
-  Calendar, Mail, Lock, AlertCircle 
+  Mail, Lock, AlertCircle 
 } from 'lucide-react';
 
 const AVAILABLE_INTERESTS = [
@@ -241,14 +242,13 @@ export default function Profile() {
                 {/* Birth date */}
                 <div>
                   <Label className="text-sm font-medium">Data de nascimento *</Label>
-                  <Input 
-                    type="date"
-                    value={dataNascimento} 
-                    onChange={(e) => setDataNascimento(e.target.value)} 
-                    className="mt-1.5 h-11 rounded-xl"
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                  {dataNascimento && (
+                  <div className="mt-1.5">
+                    <DateOfBirthPicker
+                      value={dataNascimento}
+                      onChange={setDataNascimento}
+                    />
+                  </div>
+                  {dataNascimento && !dataNascimento.includes('00') && (
                     <p className="text-xs text-muted-foreground mt-1">
                       Idade: {calculateAge(dataNascimento)} anos
                     </p>
