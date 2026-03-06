@@ -1,159 +1,128 @@
-## Diagnóstico Estrutural — Tela de Login Legada Intermitente
+## Plan: Preserve pending action via sessionStorage across onboarding
 
-Causa Raiz Identificada
+### Problem
 
-O problema é uma race condition clássica no bootstrap de autenticação. Veja o fluxo de execução:
+When `activatePresenceAtPlace` throws `PROFILE_INCOMPLETE`, the user is sent to onboarding. After completing it, they return to `/location` but lose the full context (placeId, expressionText). The current navigation-state approach only carries a basic `pendingAction` that restores place selection — it doesn't restore the expression step or selfie step, forcing the user to redo multiple steps.
 
-Plain text
+### Architecture
 
-Copiar código
+Use `sessionStorage` to persist the full action context. After onboarding, Location.tsx reads it and restores the user to the **expression step** with the place pre-selected and expression pre-filled, so they only need to take the selfie and proceed.
 
-1. App monta → AuthProvider monta → loading = true, user = null
+**Why not auto-activate?** The current flow requires a selfie before presence creation (enforced in `handleActivatePresence`). Skipping it would create presence records without selfies. Instead, we restore the user to the point just before the selfie.
 
-2. onAuthStateChange registrado (assíncrono, aguarda callback)
+### Changes
 
-3. getSession() disparado (assíncrono, aguarda resposta da rede)
+**1. Create `src/utils/pendingAction.ts**` (new file)
 
-4. ENQUANTO ISSO, a rota atual renderiza normalmente
+```typescript
+export type PendingAction = {
+  type: 'ACTIVATE_PRESENCE';
+  placeId: string;
+  expressionText?: string;
+};
 
-O problema central: A decisão de qual rota renderizar ocorre antes de loading estabilizar, permitindo redirecionamentos indevidos durante o bootstrap.
+const KEY = 'katu_pending_action';
 
-Pontos Exatos de Falha
-
-1. Auth.tsx — Redireciona baseado apenas em user, sem considerar loading.
-
-2. Home.tsx — Redireciona baseado apenas em user, sem considerar loading.
-
-3. Splash.tsx — Atua apenas na rota /, não protege acessos diretos a /home ou /auth.
-
-4. AuthContext.tsx — O duplo setLoading(false) não é a causa raiz e não precisa ser alterado neste momento.
-
-Cenário de Reprodução
-
-Plain text
-
-Copiar código
-
-1. Usuário logado abre app em /home
-
-2. AuthProvider inicia: loading=true, user=null
-
-3. Home.tsx executa useEffect → !user é true → navigate('/auth')
-
-4. Auth.tsx renderiza completamente
-
-5. getSession resolve → user preenchido → Auth redireciona para /home
-
-Em conexões lentas, a etapa 4 pode permitir interação indevida.
-
-Proposta de Correção Estrutural
-
-Abordagem (correção centralizada)
-
-Bloquear a renderização de qualquer rota enquanto loading === true, no nível do componente que controla as rotas principais (ex: App.tsx).
-
-A proteção deve ser única e centralizada.
-
-Alteração Única — App.tsx (ou componente que contém <Routes>)
-
-Adicionar no topo do componente que define as rotas:
-
-TypeScript
-
-Copiar código
-
-const { user, loading } = useAuth();
-
-if (loading) {
-
-  return null; // ou <Splash />
-
+export function savePendingAction(action: PendingAction) {
+  sessionStorage.setItem(KEY, JSON.stringify(action));
 }
 
-E estruturar as rotas condicionalmente:
+export function getPendingAction(): PendingAction | null {
+  const raw = sessionStorage.getItem(KEY);
+  if (!raw) return null;
+  return JSON.parse(raw);
+}
 
-TypeScript
+export function clearPendingAction() {
+  sessionStorage.removeItem(KEY);
+}
+```
 
-Copiar código
+**2. `src/pages/Location.tsx**` — Save context on PROFILE_INCOMPLETE
 
-return (
+In `handleActivatePresence` (line 334), when catching `PROFILE_INCOMPLETE`:
 
-  <Routes>
+```typescript
+if (err?.message === 'PROFILE_INCOMPLETE' || err?.code === 'PROFILE_INCOMPLETE') {
+  savePendingAction({
+    type: 'ACTIVATE_PRESENCE',
+    placeId: selectedPlaceId!,
+    expressionText: expressionText?.trim() || undefined,
+  });
 
-    {user ? (
+  setShowProfileGate(true);
+  return;
+}
+```
 
-      <>
+**3.** `src/pages/Location.tsx` — Restore context on mount
 
-        <Route path="/home" element={<Home />} />
+Replace the existing `pendingAction` restoration effect (lines 167-181) with sessionStorage-based restoration:
 
-        <Route path="/profile" element={<Profile />} />
+```typescript
+useEffect(() => {
+  const pending = getPendingAction();
+  if (!pending || pending.type !== 'ACTIVATE_PRESENCE') return;
 
-        <Route path="/waves" element={<Waves />} />
+  if (pending.placeId) {
+    setSelectedPlaceId(pending.placeId);
+    if (pending.expressionText) setExpressionText(pending.expressionText);
+    setStep('expression');
+  }
 
-        <Route path="/chat/:id" element={<Chat />} />
+  clearPendingAction();
+}, []);
+```
 
-        <Route path="/location/:id" element={<Location />} />
+**4. `src/pages/Location.tsx**` — Remove old navigation-state pendingAction logic
 
-        <Route path="/onboarding" element={<Onboarding />} />
+- Remove the existing `useEffect` that reads `location.state?.pendingAction` (lines 167-181)
+- Remove the `pendingAction` prop from `ProfileGateModal` render (line 673) — no longer needed
 
-        <Route path="*" element={<Navigate to="/home" replace />} />
+**5. `src/components/profile/ProfileGateModal.tsx**` — Simplify
 
-      </>
+Remove `pendingAction` prop handling. The modal just navigates to `/onboarding` without state — sessionStorage already holds the context.
 
-    ) : (
+```typescript
+onClick={() => {
+  onClose();
+  navigate('/onboarding');
+}}
+```
 
-      <>
+**6. `src/pages/Onboarding.tsx**` — Simplify
 
-        <Route path="/auth" element={<Auth />} />
+Remove the `pendingAction` reading from `location.state` (line 28) and the forwarding in `handleComplete` (line 139). Just navigate to `/location` on completion:
 
-        <Route path="*" element={<Navigate to="/auth" replace />} />
+```typescript
+navigate('/location', { replace: true });
+```
 
-      </>
+### Flow after changes
 
-    )}
+```text
+1. User selects place → types expression → takes selfie → activatePresenceAtPlace fires
+2. PROFILE_INCOMPLETE thrown
+3. savePendingAction({ type: 'ACTIVATE_PRESENCE', placeId, expressionText })
+4. ProfileGateModal opens → user clicks "Completar perfil" → navigates to /onboarding
+5. User completes onboarding → navigates to /location
+6. Location mount reads sessionStorage → restores placeId + expressionText → sets step='expression'
+7. User clicks "Continuar" → takes selfie → activatePresenceAtPlace succeeds
+```
 
-  </Routes>
+### Edge cases
 
-);
+- **Page refresh during onboarding**: sessionStorage persists within the tab session — action is restored
+- **Manual onboarding access**: No sessionStorage entry — normal flow
+- **Tab closed**: sessionStorage cleared — clean fallback to `/location`
 
-O que NÃO deve ser feito
+### Files summary
 
-Não espalhar if (loading) return null em múltiplas páginas.
 
-Não alterar AuthContext.tsx neste momento.
-
-Não modificar lógica de onAuthStateChange.
-
-O problema está no consumo do estado, não na produção do estado.
-
-Resumo das Alterações
-
-Arquivo
-
-Alteração
-
-App.tsx (ou root de rotas)
-
-Adicionar guard global if (loading) return null antes de renderizar <Routes>
-
-Nenhuma alteração necessária em:
-
-AuthContext.tsx
-
-Auth.tsx
-
-Home.tsx
-
-Outras páginas
-
-Impacto
-
-Elimina completamente a race condition
-
-Remove renderização indevida da tela legada
-
-Mantém arquitetura limpa
-
-Evita duplicação de lógica
-
-Zero impacto no banco ou UX
+| File                                          | Change                                                               |
+| --------------------------------------------- | -------------------------------------------------------------------- |
+| `src/utils/pendingAction.ts`                  | New — sessionStorage helpers                                         |
+| `src/pages/Location.tsx`                      | Save on PROFILE_INCOMPLETE, restore on mount, remove nav-state logic |
+| `src/components/profile/ProfileGateModal.tsx` | Remove pendingAction prop                                            |
+| `src/pages/Onboarding.tsx`                    | Remove pendingAction forwarding                                      |
+| `src/hooks/useProfileGate.ts`                 | Remove PendingAction type export (moved to pendingAction.ts)         |
