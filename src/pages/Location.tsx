@@ -21,7 +21,7 @@ import * as cameraService from '@/services/cameraService';
 export default function Location() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  
   const { toast } = useToast();
   const {
     intentions,
@@ -671,7 +671,7 @@ export default function Location() {
 
         }
       </div>
-      <ProfileGateModal open={showProfileGate} onClose={() => setShowProfileGate(false)} pendingAction={selectedPlaceId ? { type: 'selectPlace', placeId: selectedPlaceId } : undefined} />
+      <ProfileGateModal open={showProfileGate} onClose={() => setShowProfileGate(false)} />
     </MobileLayout>);
 
 }
