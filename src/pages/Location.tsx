@@ -340,7 +340,7 @@ export default function Location() {
 
       if (error) {
         if (error.message === 'PROFILE_INCOMPLETE') {
-          openProfileGate();
+          setShowProfileGate(true);
           return;
         }
         toast({ variant: 'destructive', title: 'Erro ao ativar presença', description: error.message });
