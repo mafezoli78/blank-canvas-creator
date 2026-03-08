@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Profile, UserInterest } from './useProfile';
@@ -25,9 +26,9 @@ export function usePeopleNearby(placeId: string | null) {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const blocksChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const mutesChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const presenceChannelRef = useRef<RealtimeChannel | null>(null);
+  const blocksChannelRef = useRef<RealtimeChannel | null>(null);
+  const mutesChannelRef = useRef<RealtimeChannel | null>(null);
 
   // Mark unmounted
   useEffect(() => {
