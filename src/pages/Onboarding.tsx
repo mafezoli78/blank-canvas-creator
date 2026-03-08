@@ -130,7 +130,17 @@ export default function Onboarding() {
         bio: bio.trim() || null,
       });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        // Handle backend age validation (trigger)
+        const msg = profileError.message || String(profileError);
+        if (msg.includes('MINIMUM_AGE')) {
+          setAgeError('Você precisa ter pelo menos 18 anos');
+          setStep(1);
+          setLoading(false);
+          return;
+        }
+        throw profileError;
+      }
 
       // Update interests
       const { error: interestsError } = await updateInterests(selectedInterests);
