@@ -74,15 +74,51 @@ export function usePeopleNearby(placeId: string | null) {
     }
   }, [user, placeId]);
 
+  // Initial fetch
   useEffect(() => {
     fetchPeopleNearby();
-    const interval = setInterval(fetchPeopleNearby, 30000);
-    return () => clearInterval(interval);
   }, [fetchPeopleNearby]);
 
-  // Realtime subscription for user_mutes — refetch when mute state changes
+  // Realtime: presence changes at this place
   useEffect(() => {
-    if (!user?.id || !placeId) return;
+    if (!placeId) return;
+
+    const channel = supabase
+      .channel(`presence-feed-${placeId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'presence',
+        filter: `place_id=eq.${placeId}`,
+      }, () => {
+        fetchPeopleNearby();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [placeId, fetchPeopleNearby]);
+
+  // Realtime: block changes
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`people-blocks-${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_blocks',
+      }, () => {
+        fetchPeopleNearby();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, fetchPeopleNearby]);
+
+  // Realtime: mute changes
+  useEffect(() => {
+    if (!user?.id) return;
 
     const channel = supabase
       .channel(`people-mutes-${user.id}`)
@@ -96,7 +132,7 @@ export function usePeopleNearby(placeId: string | null) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [user?.id, placeId, fetchPeopleNearby]);
+  }, [user?.id, fetchPeopleNearby]);
 
   return {
     people,
