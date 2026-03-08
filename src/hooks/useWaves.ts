@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  deriveFacts, 
-  canAcceptWave,
-  type InteractionData,
-} from '@/lib/interactionRules';
 
 /**
  * IMPORTANTE: Este hook mantém estado local de waves para a UI da página Waves.
