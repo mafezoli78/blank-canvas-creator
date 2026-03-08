@@ -572,6 +572,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_wave: {
+        Args: { p_user_id: string; p_wave_id: string }
+        Returns: string
+      }
       activate_presence: {
         Args: {
           p_assunto_atual?: string
