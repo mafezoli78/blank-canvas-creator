@@ -7,6 +7,7 @@ import { Check, Loader2 } from 'lucide-react';
 const MIN_INTERESTS = 3;
 const MAX_INTERESTS = 10;
 const MAX_PER_CATEGORY = 4;
+const MIN_CATEGORIES = 2;
 
 interface InterestsStepProps {
   selectedInterests: string[];
@@ -24,6 +25,28 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
     return category.interests.filter(i => selectedInterests.includes(i.id)).length;
   };
 
+  const getSelectedCategoriesCount = () => {
+    const selectedCategories = new Set<string>();
+    categories.forEach(category => {
+      category.interests.forEach(interest => {
+        if (selectedInterests.includes(interest.id)) {
+          selectedCategories.add(category.id);
+        }
+      });
+    });
+    return selectedCategories.size;
+  };
+
+  const validateSelection = () => {
+    if (selectedInterests.length < MIN_INTERESTS) {
+      return `Selecione pelo menos ${MIN_INTERESTS} interesses`;
+    }
+    if (getSelectedCategoriesCount() < MIN_CATEGORIES) {
+      return `Escolha interesses de pelo menos ${MIN_CATEGORIES} categorias diferentes`;
+    }
+    return null;
+  };
+
   const handleToggle = (interestId: string, categoryId: string) => {
     const isSelected = selectedInterests.includes(interestId);
     
@@ -34,6 +57,8 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
     
     onToggleInterest(interestId);
   };
+
+  const validationError = validateSelection();
 
   if (loading) {
     return (
@@ -94,9 +119,14 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
           );
         })}
 
-        <p className="text-sm text-muted-foreground">
-          {selectedInterests.length} de {MIN_INTERESTS}–{MAX_INTERESTS} selecionados
-        </p>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {selectedInterests.length} de {MIN_INTERESTS}–{MAX_INTERESTS} selecionados
+          </p>
+          {validationError && (
+            <p className="text-sm text-destructive">{validationError}</p>
+          )}
+        </div>
 
         <div className="flex gap-2">
           <Button variant="outline" onClick={onBack} className="flex-1">
@@ -105,7 +135,7 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
           <Button
             onClick={onNext}
             className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-            disabled={selectedInterests.length < MIN_INTERESTS}
+            disabled={!!validationError}
           >
             Continuar
           </Button>
