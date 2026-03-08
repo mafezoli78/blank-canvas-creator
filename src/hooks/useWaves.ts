@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { PRESENCE_DURATION_MS } from '@/config/presence';
 import { 
   deriveFacts, 
-  canWave, 
   canAcceptWave,
   type InteractionData,
 } from '@/lib/interactionRules';
