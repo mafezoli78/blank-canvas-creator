@@ -44,6 +44,7 @@ export default function Onboarding() {
   const [nome, setNome] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
   const [bio, setBio] = useState('');
+  const [gender, setGender] = useState<Gender | ''>('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
