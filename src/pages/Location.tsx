@@ -329,7 +329,7 @@ export default function Location() {
         if (err.message === 'PROFILE_LOADING') {
           return; // Silencia, spinner continua
         }
-        if (err.message === 'PROFILE_INCOMPLETE') {
+        if (err?.message === 'PROFILE_INCOMPLETE' || err?.code === 'PROFILE_INCOMPLETE') {
           savePendingAction({
             type: 'ACTIVATE_PRESENCE',
             placeId: selectedPlaceId || '',
