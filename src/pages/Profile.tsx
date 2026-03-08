@@ -399,10 +399,11 @@ export default function Profile() {
                 onClick={() => {
                   setEditing(false);
                   // Reset to original values
-                  if (profile) {
+                   if (profile) {
                     setNome(profile.nome || '');
                     setBio(profile.bio || '');
                     setDataNascimento(profile.data_nascimento || '');
+                    setGender(profile.gender ?? null);
                   }
                   setSelectedInterests(interests.map(i => i.tag));
                 }} 
