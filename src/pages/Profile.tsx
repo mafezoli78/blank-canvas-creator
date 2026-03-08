@@ -140,7 +140,8 @@ export default function Profile() {
       await updateProfile({ 
         nome: nome.trim(), 
         bio: bio.trim(),
-        data_nascimento: dataNascimento
+        data_nascimento: dataNascimento,
+        gender: gender,
       });
       await updateInterests(selectedInterests);
       toast({ title: 'Perfil atualizado!' });
