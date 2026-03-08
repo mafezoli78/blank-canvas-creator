@@ -54,7 +54,7 @@ export function useProfile() {
         .single();
 
       if (profileError) throw profileError;
-      setProfile(profileData);
+      setProfile(profileData as Profile);
 
       const { data: interestsData, error: interestsError } = await supabase
         .from('user_interests')
