@@ -142,6 +142,7 @@ export default function Onboarding() {
         nome: nome.trim(),
         data_nascimento: dataNascimento,
         bio: bio.trim() || null,
+        gender: gender || null,
       });
 
       if (profileError) {
