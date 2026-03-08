@@ -172,6 +172,7 @@ export function useWaves() {
     if (errorMessage.includes('WAVE_IGNORE_COOLDOWN')) return 'Aguarde para enviar novo aceno';
     if (errorMessage.includes('WAVE_NO_PRESENCE_SENDER')) return 'Você precisa estar presente neste local';
     if (errorMessage.includes('WAVE_NO_PRESENCE_RECIPIENT')) return 'Esta pessoa não está mais neste local';
+    if (errorMessage.includes('WAVE_RATE_LIMIT')) return 'Limite de acenos atingido. Aguarde um pouco.';
     return 'Erro ao enviar aceno';
   };
 
