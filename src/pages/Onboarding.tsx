@@ -64,6 +64,7 @@ export default function Onboarding() {
       if (profile.nome) setNome(profile.nome);
       if (profile.data_nascimento) setDataNascimento(profile.data_nascimento);
       if (profile.bio) setBio(profile.bio);
+      if (profile.gender) setGender(profile.gender);
       if (profile.foto_url) setAvatarPreview(profile.foto_url);
     }
   }, [profile]);
