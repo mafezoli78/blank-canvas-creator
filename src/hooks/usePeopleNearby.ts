@@ -72,11 +72,7 @@ export function usePeopleNearby(placeId: string | null) {
           criado_em: '',
           atualizado_em: '',
         } as Profile,
-        interests: (row.interests || []).map((tag: string) => ({
-          id: '',
-          user_id: row.user_id,
-          tag,
-        })) as UserInterest[],
+        interestNames: row.interests || [],
         commonInterests: row.mutual_interests || [],
         assuntoAtual: row.assunto_atual || null,
         checkinSelfieUrl: row.checkin_selfie_url || null,
