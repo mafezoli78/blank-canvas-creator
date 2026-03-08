@@ -25,6 +25,28 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
     return category.interests.filter(i => selectedInterests.includes(i.id)).length;
   };
 
+  const getSelectedCategoriesCount = () => {
+    const selectedCategories = new Set<string>();
+    categories.forEach(category => {
+      category.interests.forEach(interest => {
+        if (selectedInterests.includes(interest.id)) {
+          selectedCategories.add(category.id);
+        }
+      });
+    });
+    return selectedCategories.size;
+  };
+
+  const validateSelection = () => {
+    if (selectedInterests.length < MIN_INTERESTS) {
+      return `Selecione pelo menos ${MIN_INTERESTS} interesses`;
+    }
+    if (getSelectedCategoriesCount() < MIN_CATEGORIES) {
+      return `Escolha interesses de pelo menos ${MIN_CATEGORIES} categorias diferentes`;
+    }
+    return null;
+  };
+
   const handleToggle = (interestId: string, categoryId: string) => {
     const isSelected = selectedInterests.includes(interestId);
     
@@ -35,6 +57,8 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
     
     onToggleInterest(interestId);
   };
+
+  const validationError = validateSelection();
 
   if (loading) {
     return (
