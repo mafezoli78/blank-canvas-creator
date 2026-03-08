@@ -232,30 +232,23 @@ export function useChat(options?: UseChatOptions) {
     const conversationId = chatState.conversation.id;
 
     try {
-      // Update conversation with end info
-      const { error } = await supabase
-        .from('conversations')
-        .update({
-          ativo: false,
-          encerrado_por: user.id,
-          encerrado_em: new Date().toISOString(),
-          encerrado_motivo: reason,
-          // Apply 24h cooldown - same as end_presence_cascade
-          reinteracao_permitida_em: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        })
-        .eq('id', conversationId);
+      // RPC ATÔMICA: encerra conversa + deleta mensagens + aplica cooldown
+      const { error } = await supabase.rpc('end_conversation', {
+        p_user_id: user.id,
+        p_conversation_id: conversationId,
+        p_motivo: reason,
+      });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('END_CONV_ALREADY_ENDED')) {
+          console.log('[useChat] Conversation already ended');
+        } else {
+          throw error;
+        }
+      }
 
-      // Delete all messages for this conversation (ephemeral)
-      await supabase
-        .from('messages')
-        .delete()
-        .eq('conversation_id', conversationId);
+      console.log('[useChat] Chat ended via RPC:', reason);
 
-      console.log('[useChat] Chat ended:', reason);
-
-      // R3: We ended it explicitly, so wasEndedByMe = true, not recoverable
       setChatState({
         isActive: false,
         conversation: null,
@@ -264,9 +257,7 @@ export function useChat(options?: UseChatOptions) {
         isRecoverable: false,
       });
 
-      // Refetch to update conversation list
       refetchConversations();
-
       return { error: null };
     } catch (error) {
       console.error('[useChat] Error ending chat:', error);
