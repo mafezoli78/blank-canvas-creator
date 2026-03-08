@@ -329,7 +329,7 @@ export default function Location() {
         if (err.message === 'PROFILE_LOADING') {
           return; // Silencia, spinner continua
         }
-        if (err.message === 'PROFILE_INCOMPLETE') {
+        if (err?.message === 'PROFILE_INCOMPLETE' || err?.code === 'PROFILE_INCOMPLETE') {
           savePendingAction({
             type: 'ACTIVATE_PRESENCE',
             placeId: selectedPlaceId || '',
@@ -342,7 +342,12 @@ export default function Location() {
       }
 
       if (error) {
-        if (error.message === 'PROFILE_INCOMPLETE') {
+        if (error?.message === 'PROFILE_INCOMPLETE' || (error as any)?.code === 'PROFILE_INCOMPLETE') {
+          savePendingAction({
+            type: 'ACTIVATE_PRESENCE',
+            placeId: selectedPlaceId || '',
+            expressionText: expressionText?.trim() || undefined,
+          });
           setShowProfileGate(true);
           return;
         }
