@@ -1,18 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile, Gender } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { DateOfBirthPicker } from '@/components/profile/DateOfBirthPicker';
 import { Camera, X, Check } from 'lucide-react';
 import logoKatu from '@/assets/logo-katuu-oficial.png';
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: 'man', label: 'Homem' },
+  { value: 'woman', label: 'Mulher' },
+  { value: 'non_binary', label: 'Não-binário' },
+  { value: 'trans_man', label: 'Homem trans' },
+  { value: 'trans_woman', label: 'Mulher trans' },
+  { value: 'agender', label: 'Agênero' },
+  { value: 'genderfluid', label: 'Gênero fluido' },
+  { value: 'prefer_not_to_say', label: 'Prefiro não dizer' },
+  { value: 'other', label: 'Outro' },
+];
 
 const AVAILABLE_INTERESTS = [
   'Música', 'Cinema', 'Esportes', 'Tecnologia', 'Viagens', 'Gastronomia',
