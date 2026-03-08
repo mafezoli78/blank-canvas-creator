@@ -251,6 +251,22 @@ export default function Onboarding() {
               </div>
 
               <div className="space-y-2">
+                <Label>Gênero (opcional)</Label>
+                <Select value={gender} onValueChange={(v) => setGender(v as Gender)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione seu gênero" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {GENDER_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="bio">Bio (opcional)</Label>
                 <Textarea
                   id="bio"
