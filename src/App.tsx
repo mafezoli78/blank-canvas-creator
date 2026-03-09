@@ -14,7 +14,6 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Waves = lazy(() => import("./pages/Waves"));
 const Chat = lazy(() => import("./pages/Chat"));
 const Location = lazy(() => import("./pages/Location"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 const Debug = lazy(() => import("./pages/Debug"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
