@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  esbuild: {
+    // Remove console.* calls in production build
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
