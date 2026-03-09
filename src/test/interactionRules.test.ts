@@ -96,8 +96,6 @@ describe('interactionRules – getInteractionState precedence', () => {
 });
 
 describe('formatRemainingTime', () => {
-  // Import from config
-  const { formatRemainingTime } = require('@/config/presence');
 
   it('returns 0:00 for zero or negative', () => {
     expect(formatRemainingTime(0)).toBe('0:00');
