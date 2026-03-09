@@ -151,7 +151,7 @@ export function usePresence() {
     if (isRevalidation) {
       setIsRevalidating(true);
       setIsSuspended(true);
-      console.log('[usePresence] 🔄 Revalidation started - marked as suspended');
+      logger.debug('[usePresence] 🔄 Revalidation started - marked as suspended');
     }
 
     try {
