@@ -55,6 +55,13 @@ export default function Home() {
     refetch: refetchInteractionData,
   } = useInteractionData(currentPlace?.id || null);
 
+  const { handleWave, handleMute, handleBlock } = useHomeActions({
+    placeId: currentPlace?.id || null,
+    activeMutes,
+    blocks,
+    sendWave,
+    refetchInteractionData: refetchInteractionData,
+  });
   useEffect(() => {
     if (!user) {
       navigate('/auth', { replace: true });
