@@ -372,7 +372,7 @@ export default function Location() {
             placeId: selectedPlaceId || '',
             expressionText: expressionText?.trim() || undefined,
           });
-          setShowProfileGate(true);
+          requireProfile();
           return;
         }
         toast({ variant: 'destructive', title: 'Erro ao ativar presença', description: error.message });
