@@ -52,11 +52,7 @@ export default function Home() {
     refetchInteractionData();
   }, [refetchPeople, refetchInteractionData]);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth', { replace: true });
-    }
-  }, [user, navigate]);
+  // Redirect redundante removido — App.tsx já protege rotas autenticadas
 
   // A3: Handle presence end - show toast for automatic endings, refetch data
   useEffect(() => {
