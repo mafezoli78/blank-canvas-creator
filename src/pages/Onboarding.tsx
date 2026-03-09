@@ -142,7 +142,7 @@ export default function Onboarding() {
       if (interestsError) throw interestsError;
 
       toast({ title: 'Perfil criado com sucesso!' });
-      navigate('/location', { replace: true });
+      await executePendingOrNavigate('/location');
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({ variant: 'destructive', title: 'Erro ao salvar perfil' });
