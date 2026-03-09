@@ -418,7 +418,7 @@ export function usePresence() {
 
     if (error) {
       if (error.message?.includes('RENEWAL_LIMIT') || error.code === 'P0001') {
-        console.log('[usePresence] ⏰ Renewal limit reached (2h max) - ending presence');
+        logger.debug('[usePresence] ⏰ Renewal limit reached (2h max) - ending presence');
         await endPresence('expired');
         return { error: new Error('Presença atingiu o limite de 2 horas') };
       }
