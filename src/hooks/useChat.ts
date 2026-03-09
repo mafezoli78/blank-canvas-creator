@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, ConversationWithDetails } from './useConversations';
 import { PresenceLogicalState, PresenceEndReason } from './usePresence';
 import { toast } from '@/components/ui/use-toast';
+import { logger } from '@/lib/logger';
 
 export type ConversationEndReason = 'manual' | 'presence_end' | 'system_suspended';
 
@@ -49,7 +50,7 @@ export function useChat(options?: UseChatOptions) {
     
     // Track state transitions
     if (prevState !== null && prevState !== currentLogicalState) {
-      console.log(`[useChat] Presence state transition: ${prevState} → ${currentLogicalState}`);
+      logger.debug(`[useChat] Presence state transition: ${prevState} → ${currentLogicalState}`);
     }
     
     // Handle 'ended' state - ONLY for human-initiated actions
@@ -57,7 +58,7 @@ export function useChat(options?: UseChatOptions) {
       const isHumanAction = endReason?.isHumanInitiated ?? true;
       
       if (isHumanAction) {
-        console.log('[useChat] Presence ended (human action) - clearing active chat definitively');
+        logger.debug('[useChat] Presence ended (human action) - clearing active chat definitively');
         setChatState({
           isActive: false,
           conversation: null,
@@ -68,7 +69,7 @@ export function useChat(options?: UseChatOptions) {
       } else {
         // Technical reason reaching 'ended' - should not happen with new logic
         // but handle gracefully as recoverable
-        console.log('[useChat] Presence ended (technical) - marking as recoverable');
+        logger.debug('[useChat] Presence ended (technical) - marking as recoverable');
         setChatState(prev => ({
           ...prev,
           isActive: false,
@@ -81,7 +82,7 @@ export function useChat(options?: UseChatOptions) {
     
     // Handle 'suspended' state - technical issue, potentially recoverable
     if (currentLogicalState === 'suspended' && prevState === 'active' && chatState.isActive) {
-      console.log('[useChat] Presence suspended - marking chat as suspended (recoverable)');
+      logger.debug('[useChat] Presence suspended - marking chat as suspended (recoverable)');
       setChatState(prev => ({
         ...prev,
         endedReason: 'system_suspended',
@@ -92,7 +93,7 @@ export function useChat(options?: UseChatOptions) {
     
     // Handle recovery from 'suspended' back to 'active'
     if (currentLogicalState === 'active' && prevState === 'suspended') {
-      console.log('[useChat] Presence reactivated - chat may recover');
+      logger.debug('[useChat] Presence reactivated - chat may recover');
       // If chat was marked as suspended/recoverable, clear the suspension state
       if (chatState.isRecoverable && chatState.endedReason === 'system_suspended') {
         setChatState(prev => ({
@@ -118,7 +119,7 @@ export function useChat(options?: UseChatOptions) {
       const isHumanAction = endReason?.isHumanInitiated ?? false;
       
       if (isHumanAction) {
-        console.log('[useChat] currentPresence is null (human action) - forcing cleanup');
+        logger.debug('[useChat] currentPresence is null (human action) - forcing cleanup');
         setChatState({
           isActive: false,
           conversation: null,
@@ -128,7 +129,7 @@ export function useChat(options?: UseChatOptions) {
         });
       } else {
         // Technical reason - keep conversation reference, mark as suspended
-        console.log('[useChat] currentPresence is null (technical) - marking suspended');
+        logger.debug('[useChat] currentPresence is null (technical) - marking suspended');
         setChatState(prev => ({
           ...prev,
           endedReason: 'system_suspended',
@@ -159,7 +160,7 @@ export function useChat(options?: UseChatOptions) {
           
           // Check if this is one of our conversations and it was deactivated
           if (conversationIds.includes(updated.id) && !updated.ativo) {
-            console.log('[useChat] Conversation deactivated:', updated.id);
+            logger.debug('[useChat] Conversation deactivated:', updated.id);
             
             const wasEndedByMe = updated.encerrado_por === user?.id;
             
@@ -241,13 +242,13 @@ export function useChat(options?: UseChatOptions) {
 
       if (error) {
         if (error.message.includes('END_CONV_ALREADY_ENDED')) {
-          console.log('[useChat] Conversation already ended');
+          logger.debug('[useChat] Conversation already ended');
         } else {
           throw error;
         }
       }
 
-      console.log('[useChat] Chat ended via RPC:', reason);
+      logger.debug('[useChat] Chat ended via RPC:', reason);
 
       setChatState({
         isActive: false,
@@ -271,7 +272,7 @@ export function useChat(options?: UseChatOptions) {
   const endAllChatsForPresence = useCallback(async (_placeId?: string) => {
     if (!user) return;
 
-    console.log('[useChat] Presence ended - cleaning up local chat state (DB handled by end_presence_cascade)');
+    logger.debug('[useChat] Presence ended - cleaning up local chat state (DB handled by end_presence_cascade)');
 
     setChatState({
       isActive: false,

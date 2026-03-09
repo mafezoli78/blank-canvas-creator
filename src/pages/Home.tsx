@@ -77,23 +77,23 @@ export default function Home() {
     if (presenceLoading) return;
 
     if (presenceState.isEnteringPlace) {
-      console.log('[Home] 🚧 Entering place - blocking redirect');
+      logger.debug('[Home] 🚧 Entering place - blocking redirect');
       return;
     }
 
     if (presenceState.isRevalidating) {
-      console.log('[Home] ⏳ Revalidating - blocking redirect');
+      logger.debug('[Home] ⏳ Revalidating - blocking redirect');
       return;
     }
 
     if (presenceState.logicalState === 'ended') {
-      console.log('[Home] 🚪 Presence ended - redirecting to location');
+      logger.debug('[Home] 🚪 Presence ended - redirecting to location');
       navigate('/location', { replace: true });
       return;
     }
 
     if (!currentPresence && !currentPlace && presenceState.logicalState !== 'suspended') {
-      console.log('[Home] ℹ️ No presence found - redirecting to location');
+      logger.debug('[Home] ℹ️ No presence found - redirecting to location');
       navigate('/location', { replace: true });
     }
   }, [presenceLoading, presenceState, currentPresence, currentPlace, navigate]);
