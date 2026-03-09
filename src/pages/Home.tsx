@@ -5,6 +5,7 @@ import { usePresence } from '@/hooks/usePresence';
 import { usePeopleNearby } from '@/hooks/usePeopleNearby';
 import { useWaves } from '@/hooks/useWaves';
 import { useInteractionData } from '@/hooks/useInteractionData';
+import { useHomeActions } from '@/hooks/useHomeActions';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,7 +25,6 @@ import { useToast } from '@/hooks/use-toast';
 import { PersonCard } from '@/components/home/PersonCard';
 import { Clock, RefreshCw, LogOut, Store, Users } from 'lucide-react';
 import { TemporaryPlaceIcon } from '@/components/icons/TemporaryPlaceIcon';
-import { supabase } from '@/integrations/supabase/client';
 
 export default function Home() {
   const [openCardId, setOpenCardId] = useState<string | null>(null);
@@ -55,6 +55,13 @@ export default function Home() {
     refetch: refetchInteractionData,
   } = useInteractionData(currentPlace?.id || null);
 
+  const { handleWave, handleMute, handleBlock } = useHomeActions({
+    placeId: currentPlace?.id || null,
+    activeMutes,
+    blocks,
+    sendWave,
+    refetchInteractionData: refetchInteractionData,
+  });
   useEffect(() => {
     if (!user) {
       navigate('/auth', { replace: true });
@@ -81,100 +88,6 @@ export default function Home() {
     }
   }, [lastEndReason, clearLastEndReason, refetchWaves, refetchInteractionData, toast]);
 
-  const handleWave = async (toUserId: string) => {
-    if (!currentPlace) return;
-    
-    const { error } = await sendWave(toUserId, currentPlace.id);
-    if (error) {
-      toast({ variant: 'destructive', title: error.message });
-    } else {
-      toast({ title: 'Aceno enviado! 👋' });
-      refetchInteractionData();
-    }
-  };
-
-  const handleMute = async (targetUserId: string) => {
-    if (!user || !currentPlace) return;
-    
-    // Check if already muted
-    const existingMute = activeMutes.find(
-      m => m.user_id === user.id && m.muted_user_id === targetUserId
-    );
-    
-    if (existingMute) {
-      // Remove mute via RPC
-      const { error } = await supabase.rpc('unmute_user', {
-        p_user_id: user.id,
-        p_muted_user_id: targetUserId,
-      });
-      
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro ao remover silenciamento' });
-      } else {
-        toast({ title: 'Silenciamento removido' });
-        await refetchInteractionData();
-      }
-    } else {
-      // Create mute via RPC (with side-effects: cancel waves)
-      const { error } = await supabase.rpc('mute_user', {
-        p_user_id: user.id,
-        p_muted_user_id: targetUserId,
-        p_place_id: currentPlace.id,
-      });
-      
-      if (error) {
-        if (error.message.includes('MUTE_ALREADY_EXISTS')) {
-          toast({ title: 'Usuário já está silenciado' });
-        } else {
-          toast({ variant: 'destructive', title: 'Erro ao silenciar' });
-        }
-      } else {
-        toast({ title: 'Usuário silenciado por 24h' });
-        await refetchInteractionData();
-      }
-    }
-  };
-
-  const handleBlock = async (targetUserId: string) => {
-    if (!user) return;
-    
-    // Check if already blocked by me
-    const existingBlock = blocks.find(
-      b => b.user_id === user.id && b.blocked_user_id === targetUserId
-    );
-    
-    if (existingBlock) {
-      // Remove block via RPC
-      const { error } = await supabase.rpc('unblock_user', {
-        p_user_id: user.id,
-        p_blocked_user_id: targetUserId,
-      });
-      
-      if (error) {
-        toast({ variant: 'destructive', title: 'Erro ao remover bloqueio' });
-      } else {
-        toast({ title: 'Bloqueio removido' });
-        await refetchInteractionData();
-      }
-    } else {
-      // Create block via RPC (with side-effects: end conversations, cancel waves)
-      const { error } = await supabase.rpc('block_user', {
-        p_user_id: user.id,
-        p_blocked_user_id: targetUserId,
-      });
-      
-      if (error) {
-        if (error.message.includes('BLOCK_ALREADY_EXISTS')) {
-          toast({ title: 'Usuário já está bloqueado' });
-        } else {
-          toast({ variant: 'destructive', title: 'Erro ao bloquear' });
-        }
-      } else {
-        toast({ title: 'Usuário bloqueado' });
-        await refetchInteractionData();
-      }
-    }
-  };
 
   // Auto-redirect to location page if no active presence
   // CRITICAL: Use logical state model to prevent false redirects during revalidation
