@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { calculateDistanceMeters } from '@/config/presence';
+import { logger } from '@/lib/logger';
 
 export interface Place {
   id: string;
