@@ -212,7 +212,7 @@ export function usePresence() {
         return { valid: true };
       } else {
         if (isRevalidation) {
-          console.log('[usePresence] ⚠️ Revalidation found no presence - keeping stale state as suspended');
+          logger.debug('[usePresence] ⚠️ Revalidation found no presence - keeping stale state as suspended');
           setLastEndReason({
             type: 'presence_lost_background',
             message: END_REASON_MESSAGES.presence_lost_background,
@@ -221,7 +221,7 @@ export function usePresence() {
           });
           return { valid: false };
         } else {
-          console.log('[usePresence] ℹ️ Initial fetch found no presence');
+          logger.debug('[usePresence] ℹ️ Initial fetch found no presence');
           setCurrentPresence(null);
           setCurrentPlace(null);
           setIsSuspended(false);
