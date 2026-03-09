@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/lib/logger';
 
 export interface Message {
   id: string;
@@ -32,7 +33,7 @@ export function useMessages(conversationId: string | null) {
         .order('criado_em', { ascending: true });
 
       if (error) throw error;
-      setMessages(data as Message[] || []);
+      setMessages((data as Message[]) || []);
     } catch (error) {
       console.error('[useMessages] Error fetching messages:', error);
     } finally {
@@ -58,7 +59,7 @@ export function useMessages(conversationId: string | null) {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log('[useMessages] New message received:', payload);
+          logger.debug('[useMessages] New message received:', payload);
           const newMessage = payload.new as Message;
           setMessages(prev => {
             // Avoid duplicates
@@ -68,13 +69,13 @@ export function useMessages(conversationId: string | null) {
         }
       )
       .subscribe((status) => {
-        console.log(`[useMessages] Subscription status: ${status}`);
+        logger.debug(`[useMessages] Subscription status: ${status}`);
       });
 
     channelRef.current = channel;
 
     return () => {
-      console.log('[useMessages] Cleaning up subscription');
+      logger.debug('[useMessages] Cleaning up subscription');
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;

@@ -37,8 +37,6 @@ export enum InteractionState {
  * Derivados dos dados do banco, sem lógica de negócio.
  */
 export interface InteractionFacts {
-  /** @deprecated Use isBlockedByMe || isBlockedByOther */
-  isBlocked: boolean;
   /** A bloqueou B (eu criei o bloqueio) */
   isBlockedByMe: boolean;
   /** B bloqueou A (o outro me bloqueou) */
@@ -95,13 +93,13 @@ export interface InteractionResult {
  * Calcula o estado de interação baseado APENAS em fatos booleanos.
  * 
  * PRECEDÊNCIA (do mais restritivo para o menos):
- * 1. isBlocked      → BLOCKED (invisível)
- * 2. isMutedByA     → MUTED
- * 3. hasActiveChat  → CHAT_ACTIVE
- * 4. hasCooldown    → ENDED_BY_ME ou ENDED_BY_OTHER
- * 5. hasWaveFromB   → WAVE_RECEIVED
- * 6. hasWaveFromA   → WAVE_SENT
- * 7. (nenhum)       → NONE
+ * 1. isBlockedByOther / isBlockedByMe → BLOCKED (invisível para mim se me bloquearam)
+ * 2. isMutedByA                  → MUTED
+ * 3. hasActiveChat               → CHAT_ACTIVE
+ * 4. hasCooldown                 → ENDED_BY_ME ou ENDED_BY_OTHER
+ * 5. hasWaveFromB                → WAVE_RECEIVED
+ * 6. hasWaveFromA                → WAVE_SENT
+ * 7. (nenhum)                    → NONE
  * 
  * @param facts - Fatos booleanos derivados dos dados
  * @returns Estado de interação com configuração de botão
@@ -314,7 +312,6 @@ export function deriveFacts(
   const isBlockedByOther = data.blocks.some(
     b => b.user_id === userB && b.blocked_user_id === userA
   );
-  const isBlocked = isBlockedByMe || isBlockedByOther;
 
   // 2. SILENCIAMENTO - assimétrico (A silenciou B, não expirado)
   const isMutedByA = data.mutes.some(
@@ -386,7 +383,6 @@ export function deriveFacts(
   );
 
   return {
-    isBlocked,
     isBlockedByMe,
     isBlockedByOther,
     isMutedByA,

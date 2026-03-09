@@ -9,6 +9,7 @@ import {
 import { PresenceEndReason, END_REASON_MESSAGES } from '@/types/presence';
 import type { Presence } from './types';
 import type { Place } from '@/services/placesService';
+import { logger } from '@/lib/logger';
 
 interface UsePresenceGPSOptions {
   userId: string | undefined;
@@ -42,7 +43,7 @@ export function usePresenceGPS({
 
   const stopGPSMonitoring = useCallback(() => {
     if (gpsWatchIdRef.current !== null) {
-      console.log('[GPS] 🛑 Stopping position monitoring');
+      logger.debug('[GPS] 🛑 Stopping position monitoring');
       navigator.geolocation.clearWatch(gpsWatchIdRef.current);
       gpsWatchIdRef.current = null;
       outsideRadiusCountRef.current = 0;
@@ -67,7 +68,7 @@ export function usePresenceGPS({
       }
 
       if (data) {
-        console.log('[GPS] ✅ Presence confirmed on backend');
+        logger.debug('[GPS] ✅ Presence confirmed on backend');
       }
       return !!data;
     } catch (err) {
@@ -81,7 +82,7 @@ export function usePresenceGPS({
     const place = currentPlaceRef.current;
     if (!uid || !place) return;
 
-    console.log('[GPS] 📤 Reporting GPS exit to backend...');
+    logger.debug('[GPS] 📤 Reporting GPS exit to backend...');
 
     try {
       const { error } = await supabase.rpc('end_presence_cascade', {
@@ -96,7 +97,7 @@ export function usePresenceGPS({
         return;
       }
 
-      console.log('[GPS] ✅ Backend accepted GPS exit - presence ended definitively');
+      logger.debug('[GPS] ✅ Backend accepted GPS exit - presence ended definitively');
       stopGPSMonitoring();
 
       onPresenceEnded({
@@ -118,20 +119,20 @@ export function usePresenceGPS({
       const { lat: locLat, lng: locLng } = presenceLocationRef.current;
 
       if (accuracy && accuracy > 100) {
-        console.log(`[GPS] Ignoring reading with poor accuracy: ${accuracy}m`);
+        logger.debug(`[GPS] Ignoring reading with poor accuracy: ${accuracy}m`);
         return;
       }
 
       const distance = calculateDistanceMeters(latitude, longitude, locLat, locLng);
       const isInside = distance <= PRESENCE_RADIUS_METERS;
 
-      console.log(
+      logger.debug(
         `[GPS] Distance from place: ${Math.round(distance)}m (radius: ${PRESENCE_RADIUS_METERS}m) - ${isInside ? '✅ Inside' : '⚠️ Outside'}`
       );
 
       if (isInside) {
         if (outsideRadiusCountRef.current > 0) {
-          console.log('[GPS] ✅ Back inside radius');
+          logger.debug('[GPS] ✅ Back inside radius');
         }
         outsideRadiusCountRef.current = 0;
 
@@ -143,10 +144,10 @@ export function usePresenceGPS({
       }
 
       outsideRadiusCountRef.current++;
-      console.log(`[GPS] Outside radius (${outsideRadiusCountRef.current}/${GPS_EXIT_THRESHOLD_COUNT})`);
+      logger.debug(`[GPS] Outside radius (${outsideRadiusCountRef.current}/${GPS_EXIT_THRESHOLD_COUNT})`);
 
       if (outsideRadiusCountRef.current >= GPS_EXIT_THRESHOLD_COUNT) {
-        console.log('[GPS] 🚪 Exit threshold reached - reporting to backend');
+        logger.debug('[GPS] 🚪 Exit threshold reached - reporting to backend');
         reportGPSExitToBackend();
       }
     },
@@ -156,7 +157,7 @@ export function usePresenceGPS({
   const startGPSMonitoring = useCallback(() => {
     if (!navigator.geolocation || gpsWatchIdRef.current !== null) return;
 
-    console.log('[GPS] 📍 Starting position monitoring...');
+    logger.debug('[GPS] 📍 Starting position monitoring...');
     outsideRadiusCountRef.current = 0;
     baselineEstablishedRef.current = false;
 

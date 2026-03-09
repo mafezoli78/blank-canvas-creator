@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { calculateDistanceMeters } from '@/config/presence';
+import { logger } from '@/lib/logger';
 
 export interface Place {
   id: string;
@@ -80,7 +81,7 @@ export const placesService = {
     } catch (err: any) {
       // Don't throw on abort - just return empty
       if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
-        console.log('[placesService] Request aborted (new request started)');
+        logger.debug('[placesService] Request aborted (new request started)');
         return [];
       }
       throw err;

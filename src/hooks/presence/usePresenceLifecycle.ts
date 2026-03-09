@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import type { Presence } from './types';
+import { logger } from '@/lib/logger';
 
 interface UsePresenceLifecycleOptions {
   userId: string | undefined;
@@ -24,25 +25,25 @@ export function usePresenceLifecycle({
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         if (currentPresence) {
-          console.log('[usePresence] App going to background - marking as suspended');
+          logger.debug('[usePresence] App going to background - marking as suspended');
           onBackground();
         }
       } else if (document.visibilityState === 'visible' && userId && hasFetchedOnce) {
-        console.log('[usePresence] App returned to foreground - revalidating presence');
+        logger.debug('[usePresence] App returned to foreground - revalidating presence');
         onForeground();
       }
     };
 
     const handleFocus = () => {
       if (userId && hasFetchedOnce) {
-        console.log('[usePresence] Window focus - revalidating presence');
+        logger.debug('[usePresence] Window focus - revalidating presence');
         onForeground();
       }
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted && userId && hasFetchedOnce) {
-        console.log('[usePresence] Page restored from bfcache - revalidating presence');
+        logger.debug('[usePresence] Page restored from bfcache - revalidating presence');
         onForeground();
       }
     };

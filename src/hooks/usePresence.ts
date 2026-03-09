@@ -4,6 +4,7 @@ import { isProfileComplete as checkProfileComplete } from '@/utils/profileComple
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { placesService, Place } from '@/services/placesService';
+import { logger } from '@/lib/logger';
 import {
   PRESENCE_RADIUS_METERS,
   SEARCH_RADIUS_METERS,
@@ -118,12 +119,16 @@ export function usePresence() {
   const fetchNearbyPlaces = async (lat: number, lng: number) => {
     setPlacesLoading(true);
     try {
-      console.log(`[usePresence] 🔍 Searching places: lat=${lat}, lng=${lng}, radius=${SEARCH_RADIUS_METERS}m`);
+      logger.debug(
+        `[usePresence] 🔍 Searching places: lat=${lat}, lng=${lng}, radius=${SEARCH_RADIUS_METERS}m`
+      );
       const [places, temporaryPlaces] = await Promise.all([
         placesService.searchNearby({ latitude: lat, longitude: lng, radius: SEARCH_RADIUS_METERS }),
         fetchNearbyTemporaryPlaces(lat, lng),
       ]);
-      console.log(`[usePresence] ✅ ${places.length} places found, ${temporaryPlaces.length} temporary places nearby`);
+      logger.debug(
+        `[usePresence] ✅ ${places.length} places found, ${temporaryPlaces.length} temporary places nearby`
+      );
       setNearbyPlaces(places);
     } catch (error) {
       console.error('[usePresence] ❌ Error fetching places:', error);
@@ -146,7 +151,7 @@ export function usePresence() {
     if (isRevalidation) {
       setIsRevalidating(true);
       setIsSuspended(true);
-      console.log('[usePresence] 🔄 Revalidation started - marked as suspended');
+      logger.debug('[usePresence] 🔄 Revalidation started - marked as suspended');
     }
 
     try {
@@ -203,11 +208,11 @@ export function usePresence() {
             console.error('[usePresence] Error fetching place details:', placeError);
           }
         }
-        console.log('[usePresence] ✅ Presence validated successfully');
+        logger.debug('[usePresence] ✅ Presence validated successfully');
         return { valid: true };
       } else {
         if (isRevalidation) {
-          console.log('[usePresence] ⚠️ Revalidation found no presence - keeping stale state as suspended');
+          logger.debug('[usePresence] ⚠️ Revalidation found no presence - keeping stale state as suspended');
           setLastEndReason({
             type: 'presence_lost_background',
             message: END_REASON_MESSAGES.presence_lost_background,
@@ -216,7 +221,7 @@ export function usePresence() {
           });
           return { valid: false };
         } else {
-          console.log('[usePresence] ℹ️ Initial fetch found no presence');
+          logger.debug('[usePresence] ℹ️ Initial fetch found no presence');
           setCurrentPresence(null);
           setCurrentPlace(null);
           setIsSuspended(false);
@@ -246,7 +251,7 @@ export function usePresence() {
     const semanticReason = mapToSemanticReason(reason);
     const message = END_REASON_MESSAGES[semanticReason];
 
-    console.log(`[Presence] 🔚 Ending presence: ${reason} → ${semanticReason} (human-initiated)`);
+    logger.debug(`[Presence] 🔚 Ending presence: ${reason} → ${semanticReason} (human-initiated)`);
     stopGPSMonitoring();
 
     const placeId = currentPresence?.place_id || currentPlace?.id;
@@ -262,7 +267,7 @@ export function usePresence() {
         if (error) {
           console.error('[Presence] Error in cascade cleanup:', error);
         } else {
-          console.log('[Presence] ✅ Cascade cleanup completed with reason:', reason);
+          logger.debug('[Presence] ✅ Cascade cleanup completed with reason:', reason);
         }
       } catch (err) {
         console.error('[Presence] Error calling end_presence_cascade:', err);
@@ -323,11 +328,11 @@ export function usePresence() {
     if (activationPromiseRef.current) return activationPromiseRef.current;
 
     if (currentPresence?.place_id === placeId && currentPresence?.ativo) {
-      console.log('[Presence] Already active at this place, returning existing');
+      logger.debug('[Presence] Already active at this place, returning existing');
       return { error: null, presenceId: currentPresence.id };
     }
 
-    console.log(`[Presence] 🔄 Activating presence at place: ${placeId}`);
+    logger.debug(`[Presence] 🔄 Activating presence at place: ${placeId}`);
     setIsEnteringPlace(true);
     setLastEndReason(null);
     stopGPSMonitoring();
@@ -347,14 +352,14 @@ export function usePresence() {
           return { error, presenceId: null };
         }
 
-        console.log(`[Presence] ✅ Presence activated: ${newPresenceId}`);
+        logger.debug(`[Presence] ✅ Presence activated: ${newPresenceId}`);
         timerHook.resetTimer();
         await fetchCurrentPresence();
 
         return { error: null, presenceId: newPresenceId as string | null };
       } finally {
         setIsEnteringPlace(false);
-        console.log('[Presence] ✅ Entry transition completed');
+        logger.debug('[Presence] ✅ Entry transition completed');
       }
     })();
 
@@ -396,7 +401,7 @@ export function usePresence() {
       return { error: new Error('Não foi possível criar o local temporário'), placeId: null, presenceId: null };
     }
 
-    console.log(`[usePresence] ✅ Temporary place created: ${placeData.id}`);
+    logger.debug(`[usePresence] ✅ Temporary place created: ${placeData.id}`);
     const { error: presenceError, presenceId } = await activatePresenceAtPlace(placeData.id, intentionId, assuntoAtual);
 
     if (presenceError) return { error: presenceError, placeId: null, presenceId: null };
@@ -413,7 +418,7 @@ export function usePresence() {
 
     if (error) {
       if (error.message?.includes('RENEWAL_LIMIT') || error.code === 'P0001') {
-        console.log('[usePresence] ⏰ Renewal limit reached (2h max) - ending presence');
+        logger.debug('[usePresence] ⏰ Renewal limit reached (2h max) - ending presence');
         await endPresence('expired');
         return { error: new Error('Presença atingiu o limite de 2 horas') };
       }

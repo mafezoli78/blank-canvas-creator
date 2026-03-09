@@ -17,6 +17,7 @@ import { PlaceSelector } from '@/components/location/PlaceSelector';
 import { CheckinSelfie } from '@/components/location/CheckinSelfie';
 import { supabase } from '@/integrations/supabase/client';
 import * as cameraService from '@/services/cameraService';
+import { logger } from '@/lib/logger';
 
 export default function Location() {
   const { user } = useAuth();
@@ -66,36 +67,36 @@ export default function Location() {
       await fetchNearbyTemporaryPlaces(lat, lng);
 
       // Step 1: Initial search with 300m radius
-      console.log(`[Location] 🔍 Searching with initial radius: ${INITIAL_SEARCH_RADIUS_METERS}m`);
+      logger.debug(`[Location] 🔍 Searching with initial radius: ${INITIAL_SEARCH_RADIUS_METERS}m`);
       let results = await placesService.searchNearby({
         latitude: lat,
         longitude: lng,
         radius: INITIAL_SEARCH_RADIUS_METERS,
         limit: 20
       });
-      console.log(`[Location] Found ${results.length} places at ${INITIAL_SEARCH_RADIUS_METERS}m`);
+      logger.debug(`[Location] Found ${results.length} places at ${INITIAL_SEARCH_RADIUS_METERS}m`);
 
       // Step 2: If fewer than MIN_RESULTS_FOR_EXPANSION, expand to 600m
       if (results.length < MIN_RESULTS_FOR_EXPANSION) {
-        console.log(`[Location] 🔍 Expanding to ${EXPANDED_SEARCH_RADIUS_METERS}m (found < ${MIN_RESULTS_FOR_EXPANSION})`);
+        logger.debug(`[Location] 🔍 Expanding to ${EXPANDED_SEARCH_RADIUS_METERS}m (found < ${MIN_RESULTS_FOR_EXPANSION})`);
         results = await placesService.searchNearby({
           latitude: lat,
           longitude: lng,
           radius: EXPANDED_SEARCH_RADIUS_METERS,
           limit: 20
         });
-        console.log(`[Location] Found ${results.length} places at ${EXPANDED_SEARCH_RADIUS_METERS}m`);
+        logger.debug(`[Location] Found ${results.length} places at ${EXPANDED_SEARCH_RADIUS_METERS}m`);
 
         // Step 3: If still fewer than MIN_RESULTS_FOR_EXPANSION, expand to max 800m
         if (results.length < MIN_RESULTS_FOR_EXPANSION) {
-          console.log(`[Location] 🔍 Expanding to max radius: ${MAX_SEARCH_RADIUS_METERS}m`);
+          logger.debug(`[Location] 🔍 Expanding to max radius: ${MAX_SEARCH_RADIUS_METERS}m`);
           results = await placesService.searchNearby({
             latitude: lat,
             longitude: lng,
             radius: MAX_SEARCH_RADIUS_METERS,
             limit: 20
           });
-          console.log(`[Location] Found ${results.length} places at ${MAX_SEARCH_RADIUS_METERS}m (max)`);
+          logger.debug(`[Location] Found ${results.length} places at ${MAX_SEARCH_RADIUS_METERS}m (max)`);
         }
       }
 
@@ -105,11 +106,11 @@ export default function Location() {
       if (results.length > 0 && results[0].distance_meters !== undefined) {
         if (results[0].distance_meters <= PROXIMITY_THRESHOLD_METERS) {
           setClosestPlace(results[0]);
-          console.log(`[Location] Found very close place: ${results[0].nome} (${results[0].distance_meters}m)`);
+          logger.debug(`[Location] Found very close place: ${results[0].nome} (${results[0].distance_meters}m)`);
         }
       }
 
-      console.log(`[Location] ✅ Final result: ${results.length} places`);
+      logger.debug(`[Location] ✅ Final result: ${results.length} places`);
     } catch (error) {
       console.error('[Location] Error fetching places:', error);
       toast({
@@ -135,7 +136,7 @@ export default function Location() {
     }
     if (loading) return;
     if (currentPresence) {
-      console.log('[Location] User has active presence, redirecting to home');
+      logger.debug('[Location] User has active presence, redirecting to home');
       navigate('/home', { replace: true });
       return;
     }
@@ -199,7 +200,7 @@ export default function Location() {
         setPermissionStatus('granted');
 
         const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-        console.log(`[Location] 📍 Got user coordinates: lat=${coords.lat}, lng=${coords.lng}`);
+        logger.debug(`[Location] 📍 Got user coordinates: lat=${coords.lat}, lng=${coords.lng}`);
         setUserCoords(coords);
         fetchPlacesRef.current?.(coords.lat, coords.lng);
         setStep('select');
