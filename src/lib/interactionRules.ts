@@ -312,7 +312,6 @@ export function deriveFacts(
   const isBlockedByOther = data.blocks.some(
     b => b.user_id === userB && b.blocked_user_id === userA
   );
-  const isBlocked = isBlockedByMe || isBlockedByOther;
 
   // 2. SILENCIAMENTO - assimétrico (A silenciou B, não expirado)
   const isMutedByA = data.mutes.some(
