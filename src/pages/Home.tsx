@@ -6,7 +6,7 @@ import { usePeopleNearby } from '@/hooks/usePeopleNearby';
 import { useWaves } from '@/hooks/useWaves';
 import { useInteractionData } from '@/hooks/useInteractionData';
 import { useHomeActions } from '@/hooks/useHomeActions';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { PresenceStatusCard } from '@/components/home/PresenceStatusCard';
 import { PeopleList } from '@/components/home/PeopleList';
