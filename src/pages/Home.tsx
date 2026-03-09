@@ -5,6 +5,7 @@ import { usePresence } from '@/hooks/usePresence';
 import { usePeopleNearby } from '@/hooks/usePeopleNearby';
 import { useWaves } from '@/hooks/useWaves';
 import { useInteractionData } from '@/hooks/useInteractionData';
+import { useHomeActions } from '@/hooks/useHomeActions';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
