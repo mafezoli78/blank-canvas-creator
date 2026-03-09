@@ -401,7 +401,7 @@ export function usePresence() {
       return { error: new Error('Não foi possível criar o local temporário'), placeId: null, presenceId: null };
     }
 
-    console.log(`[usePresence] ✅ Temporary place created: ${placeData.id}`);
+    logger.debug(`[usePresence] ✅ Temporary place created: ${placeData.id}`);
     const { error: presenceError, presenceId } = await activatePresenceAtPlace(placeData.id, intentionId, assuntoAtual);
 
     if (presenceError) return { error: presenceError, placeId: null, presenceId: null };
