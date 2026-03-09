@@ -4,6 +4,7 @@ import { isProfileComplete as checkProfileComplete } from '@/utils/profileComple
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { placesService, Place } from '@/services/placesService';
+import { logger } from '@/lib/logger';
 import {
   PRESENCE_RADIUS_METERS,
   SEARCH_RADIUS_METERS,
