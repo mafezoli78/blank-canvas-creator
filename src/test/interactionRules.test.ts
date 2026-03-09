@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   deriveFacts,
   getInteractionState,
@@ -7,6 +8,7 @@ import {
   type InteractionData,
   type InteractionFacts,
 } from '@/lib/interactionRules';
+import { formatRemainingTime } from '@/config/presence';
 
 const USER_A = 'aaa-111';
 const USER_B = 'bbb-222';
