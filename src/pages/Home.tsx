@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { PresenceStatusCard } from '@/components/home/PresenceStatusCard';
 import { PeopleList } from '@/components/home/PeopleList';
+import { TutorialOverlay } from '@/features/tutorial/TutorialOverlay';
 import { logger } from '@/lib/logger';
 
 export default function Home() {
