@@ -143,6 +143,13 @@ export function usePresenceGPS({
         return;
       }
 
+      // CRITICAL: Don't count outside readings until baseline is established
+      // Initial GPS readings can be very inaccurate and cause false exits
+      if (!baselineEstablishedRef.current) {
+        logger.debug('[GPS] ⏳ Outside radius but baseline not established yet - ignoring');
+        return;
+      }
+
       outsideRadiusCountRef.current++;
       logger.debug(`[GPS] Outside radius (${outsideRadiusCountRef.current}/${GPS_EXIT_THRESHOLD_COUNT})`);
 
