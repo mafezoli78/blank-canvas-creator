@@ -4,6 +4,7 @@ import {
   PRESENCE_RADIUS_METERS,
   GPS_CHECK_INTERVAL_MS,
   GPS_EXIT_THRESHOLD_COUNT,
+  GPS_ACCURACY_THRESHOLD_METERS,
   calculateDistanceMeters,
 } from '@/config/presence';
 import { PresenceEndReason, END_REASON_MESSAGES } from '@/types/presence';
@@ -118,8 +119,8 @@ export function usePresenceGPS({
       const { latitude, longitude, accuracy } = position.coords;
       const { lat: locLat, lng: locLng } = presenceLocationRef.current;
 
-      if (accuracy && accuracy > 100) {
-        logger.debug(`[GPS] Ignoring reading with poor accuracy: ${accuracy}m`);
+      if (accuracy && accuracy > GPS_ACCURACY_THRESHOLD_METERS) {
+        logger.debug(`[GPS] Ignoring reading with poor accuracy: ${accuracy}m (threshold: ${GPS_ACCURACY_THRESHOLD_METERS}m)`);
         return;
       }
 
@@ -140,6 +141,13 @@ export function usePresenceGPS({
           baselineEstablishedRef.current = true;
           confirmPresenceOnBackend();
         }
+        return;
+      }
+
+      // CRITICAL: Don't count outside readings until baseline is established
+      // Initial GPS readings can be very inaccurate and cause false exits
+      if (!baselineEstablishedRef.current) {
+        logger.debug('[GPS] ⏳ Outside radius but baseline not established yet - ignoring');
         return;
       }
 
