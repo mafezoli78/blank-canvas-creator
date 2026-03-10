@@ -28,6 +28,7 @@ interface PersonCardProps {
   onBlock: (userId: string) => Promise<void>;
   openCardId: string | null;
   onSwipeOpen: (id: string | null) => void;
+  isFirst?: boolean;
 }
 
 export function PersonCard({
