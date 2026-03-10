@@ -111,6 +111,7 @@ export default function Home() {
 
   return (
     <MobileLayout>
+      <TutorialOverlay>
       <div className="p-4 space-y-4 page-fade">
         <PresenceStatusCard
           placeName={currentPlace.nome}
