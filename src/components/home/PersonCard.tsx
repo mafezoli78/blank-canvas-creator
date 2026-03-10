@@ -222,7 +222,7 @@ export function PersonCard({
   );
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <div id={isFirst ? 'user-card' : undefined} className="relative overflow-hidden rounded-lg">
       <SwipeActions
         personId={person.id}
         isMuted={isMutedByMe}
