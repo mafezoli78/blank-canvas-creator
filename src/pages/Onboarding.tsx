@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-
+import { usePendingAction } from '@/hooks/usePendingAction';
 import type { Gender } from '@/types/gender';
 import { GENDER_OPTIONS } from '@/types/gender';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const { profile, updateProfile, updateInterests, uploadAvatar, isProfileComplete } = useProfile();
   const { categories } = useInterestCategories();
-  
+  const { executePendingOrNavigate } = usePendingAction();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -142,7 +142,7 @@ export default function Onboarding() {
       if (interestsError) throw interestsError;
 
       toast({ title: 'Perfil criado com sucesso!' });
-      navigate('/location', { replace: true });
+      await executePendingOrNavigate('/location');
     } catch (error) {
       console.error('Error completing onboarding:', error);
       toast({ variant: 'destructive', title: 'Erro ao salvar perfil' });
