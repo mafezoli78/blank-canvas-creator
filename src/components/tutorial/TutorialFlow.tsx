@@ -129,11 +129,11 @@ function StepWelcome({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
           {CHARACTERS.map((c) => (
             <div key={c.name} className="flex flex-col items-center gap-1">
               <CharAvatar char={c} size="md" showBadge />
-              <span className="text-xs text-white/60">{c.name}</span>
+              <span className="text-sm text-white/60">{c.name}</span>
             </div>
           ))}
         </div>
-        <p className="text-xs text-white/40">Pessoas reais, presentes agora.</p>
+        <p className="text-sm text-white/40">Pessoas reais, presentes agora.</p>
       </div>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
