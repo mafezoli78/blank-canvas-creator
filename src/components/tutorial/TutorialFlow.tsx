@@ -199,7 +199,7 @@ function StepLocais({ onNext, onBack }: { onNext: () => void; onBack: () => void
                           {p.count} {p.count === 1 ? 'pessoa' : 'pessoas'}
                         </Badge>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Ninguém por aqui ainda</span>
+                        <span className="text-sm text-muted-foreground">Ninguém por aqui ainda</span>
                       )}
                     </div>
                   </div>
