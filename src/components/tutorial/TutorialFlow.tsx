@@ -709,15 +709,6 @@ function StepFinal({ onComplete, onRestart }: { onComplete: () => void; onRestar
         </p>
       </div>
 
-      <div className="flex justify-center gap-3">
-        {CHARACTERS.map((c) => (
-          <div key={c.name} className="flex flex-col items-center gap-1">
-            <CharAvatar char={c} size="md" showBadge />
-            <span className="text-xs text-white/60">{c.name}</span>
-          </div>
-        ))}
-      </div>
-
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <Button onClick={onComplete} className="w-full py-4 rounded-2xl bg-accent text-accent-foreground font-bold text-base shadow-lg hover:bg-accent/90">
           Começar a usar o Katuu 🚀
