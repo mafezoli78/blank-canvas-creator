@@ -302,7 +302,7 @@ function StepMomento({ onNext, onBack }: { onNext: () => void; onBack: () => voi
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg leading-tight">Café do Ponto</h3>
-                    <span className="text-xs text-white/70 flex items-center gap-1">
+                    <span className="text-sm text-white/70 flex items-center gap-1">
                       <Clock className="h-3 w-3" /> 2:00:00
                     </span>
                   </div>
