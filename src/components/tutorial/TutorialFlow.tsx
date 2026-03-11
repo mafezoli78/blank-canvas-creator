@@ -82,7 +82,7 @@ function TooltipCallout({ text, onAction }: { text: string; onAction: () => void
   return (
     <div className="bg-primary text-primary-foreground rounded-xl p-3 shadow-lg relative">
       <p className="text-sm leading-relaxed mb-2">{text}</p>
-      <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg text-xs font-semibold" onClick={onAction}>
+      <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg text-sm font-semibold" onClick={onAction}>
         Ok
       </Button>
       <div className="absolute -top-2 right-6 w-4 h-4 bg-primary rotate-45" />
