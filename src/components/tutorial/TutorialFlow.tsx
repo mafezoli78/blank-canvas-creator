@@ -638,11 +638,11 @@ function StepControles({ onNext, onBack }: { onNext: () => void; onBack: () => v
             <div className="absolute right-0 top-0 bottom-0 flex flex-col" style={{ width: 80 }}>
               <button className="flex-1 flex flex-col items-center justify-center gap-1">
                 <VolumeX size={18} className="text-foreground/70" />
-                <span className="text-xs text-foreground/70 font-medium">Silenciar</span>
+                <span className="text-sm text-foreground/70 font-medium">Silenciar</span>
               </button>
               <button className="flex-1 flex flex-col items-center justify-center gap-1">
                 <Ban size={18} className="text-foreground/70" />
-                <span className="text-xs text-foreground/70 font-medium">Bloquear</span>
+                <span className="text-sm text-foreground/70 font-medium">Bloquear</span>
               </button>
             </div>
 
