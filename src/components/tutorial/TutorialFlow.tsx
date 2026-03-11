@@ -485,7 +485,7 @@ function StepPerfil({ onNext, onBack }: { onNext: () => void; onBack: () => void
           </Card>
 
           <div className="bg-amber-50 rounded-2xl p-3">
-            <p className="text-xs text-amber-700 leading-relaxed">
+            <p className="text-sm text-amber-700 leading-relaxed">
               ⚠️ Sem nome, data de nascimento e interesses, você <strong>não aparece</strong> para outras pessoas nos locais.
             </p>
           </div>
