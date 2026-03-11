@@ -416,7 +416,7 @@ function StepSelfie({ onNext, onBack }: { onNext: () => void; onBack: () => void
           </div>
 
           <div className="bg-primary/5 rounded-2xl p-3">
-            <p className="text-xs text-primary leading-relaxed">
+            <p className="text-sm text-primary leading-relaxed">
               📷 A foto é tirada no momento — não é possível usar fotos da galeria. Isso garante que você está realmente presente.
             </p>
           </div>
