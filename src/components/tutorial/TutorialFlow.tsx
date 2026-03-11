@@ -574,7 +574,7 @@ function StepAceno({ onNext, onBack }: { onNext: () => void; onBack: () => void 
                         ) : (
                           <Button
                             onClick={() => setWaved(char.name)}
-                            className="w-full h-9 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-xs"
+                            className="w-full h-9 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-sm"
                             size="sm"
                           >
                             <HandshakeIcon className="h-4 w-4 mr-1" /> Acenar
