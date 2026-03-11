@@ -28,7 +28,6 @@ interface PersonCardProps {
   onBlock: (userId: string) => Promise<void>;
   openCardId: string | null;
   onSwipeOpen: (id: string | null) => void;
-  isFirst?: boolean;
 }
 
 export function PersonCard({
@@ -44,7 +43,6 @@ export function PersonCard({
   onBlock,
   openCardId,
   onSwipeOpen,
-  isFirst,
 }: PersonCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -211,7 +209,6 @@ export function PersonCard({
 
   const ctaButton = (
     <Button
-      id={isFirst ? 'wave-button' : undefined}
       className={`w-full h-11 rounded-xl font-semibold ${getButtonStyles()}`}
       disabled={button.disabled}
       onClick={handleButtonClick}
@@ -222,7 +219,7 @@ export function PersonCard({
   );
 
   return (
-    <div id={isFirst ? 'user-card' : undefined} className="relative overflow-hidden rounded-lg">
+    <div className="relative overflow-hidden rounded-lg">
       <SwipeActions
         personId={person.id}
         isMuted={isMutedByMe}
@@ -242,7 +239,6 @@ export function PersonCard({
       />
 
       <div
-        id={isFirst ? 'card-slider' : undefined}
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isAnimating ? 'transform 200ms ease-out' : 'none',
