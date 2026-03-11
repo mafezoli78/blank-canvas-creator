@@ -699,7 +699,7 @@ export function TutorialFlow({ onComplete }: TutorialFlowProps) {
     if (!user) return;
     await supabase
       .from('profiles')
-      .update({ tutorial_completed_at: new Date().toISOString() })
+      .update({ tutorial_enabled: false })
       .eq('id', user.id);
   }, [user]);
 
