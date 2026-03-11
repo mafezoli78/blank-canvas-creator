@@ -21,7 +21,7 @@ import { PasswordChangeDialog } from '@/components/profile/PasswordChangeDialog'
 import { DateOfBirthPicker } from '@/components/profile/DateOfBirthPicker';
 import { 
   Camera, LogOut, Check, User, Heart, Pencil, X, 
-  Mail, Lock, AlertCircle 
+  Mail, Lock, AlertCircle, RotateCcw
 } from 'lucide-react';
 
 const MIN_BIO_LENGTH = 40;
