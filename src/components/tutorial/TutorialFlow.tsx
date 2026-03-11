@@ -162,7 +162,7 @@ function StepLocais({ onNext, onBack }: { onNext: () => void; onBack: () => void
       />
 
       {/* Header: title left, List/Map icons right */}
-      <div className="px-6 pt-4 pb-3 relative z-[11] flex items-start justify-between">
+      <div className="px-6 pt-4 pb-3 relative flex items-start justify-between">
         <div>
           <h2 className="text-xl font-bold text-foreground">Onde você está agora?</h2>
           <p className="text-muted-foreground text-sm mt-1">
