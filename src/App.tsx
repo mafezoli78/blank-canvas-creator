@@ -34,9 +34,14 @@ function PageLoader() {
 
 function AppRoutes() {
   const { user, loading } = useAuth();
+  const { shouldShowTutorial, loading: tutorialLoading, dismissTutorial } = useTutorial();
 
-  if (loading) {
+  if (loading || tutorialLoading) {
     return null;
+  }
+
+  if (user && shouldShowTutorial) {
+    return <TutorialFlow onComplete={dismissTutorial} />;
   }
 
   return (
