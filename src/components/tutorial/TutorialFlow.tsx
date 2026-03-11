@@ -476,7 +476,7 @@ function StepPerfil({ onNext, onBack }: { onNext: () => void; onBack: () => void
                 <span className="text-xl mt-0.5">🏷️</span>
                 <div>
                   <p className="font-semibold text-sm">Interesses</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  <p className="text-base text-muted-foreground mt-0.5 leading-relaxed">
                     Seus interesses <strong>não aparecem no seu card</strong> para outras pessoas. Eles são usados apenas para <strong>ordenar quem aparece primeiro</strong> — pessoas com interesses em comum ficam no topo da sua lista.
                   </p>
                 </div>
