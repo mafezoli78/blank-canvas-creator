@@ -591,8 +591,8 @@ function StepAceno({ onNext, onBack }: { onNext: () => void; onBack: () => void 
           {waved && !accepted && (
             <div className="bg-accent/10 rounded-2xl p-3 border border-accent/20">
               <p className="text-sm font-semibold mb-1">Aceno enviado para {waved}!</p>
-              <p className="text-xs text-muted-foreground mb-2">Agora {waved} recebe uma notificação e pode aceitar ou ignorar. Se aceitar, o chat abre automaticamente.</p>
-              <Button onClick={() => setAccepted(true)} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-xs font-semibold" size="sm">
+              <p className="text-sm text-muted-foreground mb-2">Agora {waved} recebe uma notificação e pode aceitar ou ignorar. Se aceitar, o chat abre automaticamente.</p>
+              <Button onClick={() => setAccepted(true)} className="w-full bg-accent text-accent-foreground hover:bg-accent/90 text-sm font-semibold" size="sm">
                 Simular: {waved} aceitou! 🎉
               </Button>
             </div>
