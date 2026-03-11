@@ -559,7 +559,7 @@ function StepAceno({ onNext, onBack }: { onNext: () => void; onBack: () => void 
                       <div className="mt-2">
                         {waved === char.name ? (
                           <Button
-                            className={`w-full h-9 rounded-xl font-semibold text-xs ${
+                            className={`w-full h-9 rounded-xl font-semibold text-sm ${
                               accepted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                             }`}
                             disabled={!accepted}
