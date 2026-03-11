@@ -542,42 +542,44 @@ function StepAceno({ onNext, onBack }: { onNext: () => void; onBack: () => void 
           <div className="flex flex-col gap-2">
             {CHARACTERS.map((char) => (
               <Card key={char.name} className="border-0 shadow-sm overflow-hidden">
-                <CardContent className="p-3">
-                  <div className="flex items-start gap-3">
-                    <img
-                      src={char.photo}
-                      alt={char.name}
-                      className="w-14 h-14 object-cover rounded-xl flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm">
-                        {char.name}<span className="text-muted-foreground font-normal">, {char.age}</span>
+                <CardContent className="p-0">
+                  <div className="flex h-full">
+                    <div className="w-[36%] flex items-center p-2.5">
+                      <img
+                        src={char.photo}
+                        alt={char.name}
+                        className="w-full aspect-square object-cover rounded-xl"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between p-4">
+                      <div>
+                        <div className="font-semibold text-base">
+                          {char.name}<span className="text-muted-foreground font-normal">, {char.age}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <span className="font-medium text-foreground">Aqui:</span> {char.intention}
+                        </p>
                       </div>
-                      <p className="text-base text-muted-foreground mt-0.5">
-                        <span className="font-medium text-foreground">Aqui:</span> {char.intention}
-                      </p>
-                      <div className="mt-2">
+                      <div className="mt-3">
                         {waved === char.name ? (
                           <Button
-                            className={`w-full h-9 rounded-xl font-semibold text-sm ${
+                            className={`w-full h-11 rounded-xl font-semibold ${
                               accepted ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                             }`}
                             disabled={!accepted}
-                            size="sm"
                           >
                             {accepted ? (
-                              <><MessageCircle className="h-4 w-4 mr-1" /> Chat</>
+                              <><MessageCircle className="h-5 w-5 mr-2" /> Chat</>
                             ) : (
-                              <><HandshakeIcon className="h-4 w-4 mr-1" /> Aceno enviado</>
+                              <><HandshakeIcon className="h-5 w-5 mr-2" /> Aceno enviado</>
                             )}
                           </Button>
                         ) : (
                           <Button
                             onClick={() => setWaved(char.name)}
-                            className="w-full h-9 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-semibold text-sm"
-                            size="sm"
+                            className="w-full h-11 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
                           >
-                            <HandshakeIcon className="h-4 w-4 mr-1" /> Acenar
+                            <HandshakeIcon className="h-5 w-5 mr-2" /> Acenar
                           </Button>
                         )}
                       </div>
