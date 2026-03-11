@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
+import { supabase } from '@/integrations/supabase/client';
 import { useInterestCategories } from '@/hooks/useInterestCategories';
 import type { Gender } from '@/types/gender';
 import { GENDER_OPTIONS } from '@/types/gender';
