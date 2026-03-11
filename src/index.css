@@ -251,6 +251,14 @@
   100% { transform: scale(1); opacity: 0; }
 }
 
+/* Tutorial swipe animation */
+@keyframes tutorial-swipe {
+  0%   { transform: translateX(0); }
+  30%  { transform: translateX(-140px); }
+  70%  { transform: translateX(-140px); }
+  100% { transform: translateX(0); }
+}
+
 /* Place pins */
 .leaflet-place-pin {
   background: none !important;
