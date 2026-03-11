@@ -194,7 +194,7 @@ function StepLocais({ onNext, onBack }: { onNext: () => void; onBack: () => void
                     <h3 className="font-semibold text-sm truncate">{p.name}</h3>
                     <div className="flex items-center gap-2 mt-0.5">
                       {p.count > 0 ? (
-                        <Badge variant="secondary" className="text-xs bg-katu-green/10 text-katu-green border-0">
+                        <Badge variant="secondary" className="text-sm bg-katu-green/10 text-katu-green border-0">
                           <Users className="h-3 w-3 mr-1" />
                           {p.count} {p.count === 1 ? 'pessoa' : 'pessoas'}
                         </Badge>
