@@ -463,7 +463,7 @@ function StepPerfil({ onNext, onBack }: { onNext: () => void; onBack: () => void
               </div>
               {['Nome', 'Data de nascimento', 'Gênero (opcional)', 'Bio (opcional)'].map((f) => (
                 <div key={f} className="border border-border rounded-xl px-3 py-2">
-                  <p className="text-xs text-muted-foreground">{f}</p>
+                  <p className="text-sm text-muted-foreground">{f}</p>
                 </div>
               ))}
             </CardContent>
