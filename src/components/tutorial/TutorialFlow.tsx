@@ -340,8 +340,8 @@ function StepMomento({ onNext, onBack }: { onNext: () => void; onBack: () => voi
             </CardContent>
           </Card>
 
-          <div className="bg-katu-green/10 rounded-2xl p-3">
-            <p className="text-sm text-katu-green leading-relaxed">
+          <div className="bg-muted rounded-2xl p-3">
+            <p className="text-sm text-foreground leading-relaxed">
               ✅ Sua presença fica ativa por <strong>2 horas</strong>. Você pode renovar ou sair quando quiser.
             </p>
           </div>
