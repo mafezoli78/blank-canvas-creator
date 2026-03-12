@@ -3,6 +3,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Profile } from './useProfile';
+import { getSignedSelfieUrls } from '@/lib/storage';
 
 export interface PersonNearby {
   id: string;
