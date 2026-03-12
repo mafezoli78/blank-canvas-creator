@@ -26,10 +26,29 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
   const fileInputRef = useRef<HTMLInputElement>(null);
   const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Load face detection models once
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        setModelsLoaded(true);
+      } catch (err) {
+        console.error('[FaceDetect] Failed to load models:', err);
+        setModelsLoaded(true);
+        setFaceDetected(true);
+      }
+    };
+    loadModels();
+  }, []);
+
   // Cleanup camera on unmount
   useEffect(() => {
     return () => {
       cameraService.stopCamera();
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
     };
   }, []);
 
