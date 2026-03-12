@@ -67,6 +67,32 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
     }
   }, [step]);
 
+  // Run face detection loop when camera is active
+  useEffect(() => {
+    if (step !== 'capture' || !modelsLoaded || !videoRef.current || cameraError) return;
+
+    detectionIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current) return;
+      try {
+        const detection = await faceapi.detectSingleFace(
+          videoRef.current,
+          new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 })
+        );
+        setFaceDetected(!!detection);
+      } catch {
+        // Silently ignore detection errors
+      }
+    }, 400);
+
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+      setFaceDetected(false);
+    };
+  }, [step, modelsLoaded, cameraError]);
+
   // Watch failure count → trigger fallback
   useEffect(() => {
     if (cameraFailCount >= 2) {
