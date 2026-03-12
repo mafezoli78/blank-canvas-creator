@@ -19,9 +19,12 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraFailCount, setCameraFailCount] = useState(0);
   const [selfieSource, setSelfieSource] = useState<'camera' | 'upload'>('camera');
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Cleanup camera on unmount
   useEffect(() => {
