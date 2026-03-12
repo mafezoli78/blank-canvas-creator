@@ -46,6 +46,7 @@ export function useWaves() {
   const [receivedWaves, setReceivedWaves] = useState<Wave[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingReceivedCount, setPendingReceivedCount] = useState(0);
 
   // Filter valid waves (pending and not expired by time or status)
   const filterValidWaves = useCallback((waves: Wave[]) => {
@@ -96,6 +97,7 @@ export function useWaves() {
         const validReceived = filterValidWaves(receivedResult.data as Wave[] || []);
         setReceivedWaves(validReceived);
         setUnreadCount(validReceived.filter(w => !w.visualizado).length);
+        setPendingReceivedCount(validReceived.length);
       }
     } catch (error) {
       console.error('Error fetching waves:', error);
@@ -325,6 +327,7 @@ export function useWaves() {
     sentWaves,
     receivedWaves,
     unreadCount,
+    pendingReceivedCount,
     loading,
     sendWave,
     acceptWave,
