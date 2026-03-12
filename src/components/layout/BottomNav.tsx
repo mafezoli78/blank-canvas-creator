@@ -9,7 +9,6 @@ import { HandshakeIcon } from '@/components/icons/HandshakeIcon';
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { unreadCount } = useWaves();
   const { conversations } = useConversations();
   const conversationIds = conversations.map(c => c.id);
   const { totalUnread } = useUnreadMessages(conversationIds);
