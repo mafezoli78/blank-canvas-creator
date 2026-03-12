@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Camera, RefreshCw, Loader2, Upload, ImageOff } from 'lucide-react';
+import * as faceapi from 'face-api.js';
 import * as cameraService from '@/services/cameraService';
 
 type Step = 'capture' | 'preview' | 'fallback-upload';
@@ -18,14 +19,36 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraFailCount, setCameraFailCount] = useState(0);
   const [selfieSource, setSelfieSource] = useState<'camera' | 'upload'>('camera');
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const detectionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Load face detection models once
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+        setModelsLoaded(true);
+      } catch (err) {
+        console.error('[FaceDetect] Failed to load models:', err);
+        setModelsLoaded(true);
+        setFaceDetected(true);
+      }
+    };
+    loadModels();
+  }, []);
 
   // Cleanup camera on unmount
   useEffect(() => {
     return () => {
       cameraService.stopCamera();
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
     };
   }, []);
 
@@ -43,6 +66,32 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
       setCameraFailCount((c) => c + 1);
     }
   }, [step]);
+
+  // Run face detection loop when camera is active
+  useEffect(() => {
+    if (step !== 'capture' || !modelsLoaded || !videoRef.current || cameraError) return;
+
+    detectionIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current) return;
+      try {
+        const detection = await faceapi.detectSingleFace(
+          videoRef.current,
+          new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.5 })
+        );
+        setFaceDetected(!!detection);
+      } catch {
+        // Silently ignore detection errors
+      }
+    }, 400);
+
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+      setFaceDetected(false);
+    };
+  }, [step, modelsLoaded, cameraError]);
 
   // Watch failure count → trigger fallback
   useEffect(() => {
@@ -163,6 +212,19 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
                 style={{ transform: 'scaleX(-1)' }}
               />
             )}
+
+            {/* Face detection indicator overlay */}
+            {!cameraError && modelsLoaded && (
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+                <div className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  faceDetected
+                    ? 'bg-green-500/90 text-white'
+                    : 'bg-black/60 text-white/70'
+                }`}>
+                  {faceDetected ? '✓ Rosto detectado' : 'Posicione seu rosto'}
+                </div>
+              </div>
+            )}
           </div>
 
           <canvas ref={canvasRef} className="hidden" />
@@ -171,10 +233,11 @@ export function CheckinSelfie({ onConfirm, onCancel, uploading }: CheckinSelfieP
             <Button
               onClick={handleCapture}
               variant="secondary"
-              className="w-full h-12 rounded-xl font-semibold text-base"
+              disabled={!faceDetected || !modelsLoaded}
+              className="w-full h-12 rounded-xl font-semibold text-base disabled:opacity-50"
             >
               <Camera className="h-5 w-5 mr-2" />
-              Capturar
+              {!modelsLoaded ? 'Carregando...' : !faceDetected ? 'Posicione seu rosto' : 'Capturar'}
             </Button>
           )}
         </>
