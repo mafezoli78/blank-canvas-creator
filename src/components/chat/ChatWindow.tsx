@@ -120,6 +120,7 @@ export function ChatWindow({
                   </div>
                 </div>;
         })}
+            <div ref={bottomRef} />
           </div>}
       </div>
 
