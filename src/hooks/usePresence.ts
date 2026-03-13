@@ -263,7 +263,7 @@ export function usePresence() {
           p_place_id: placeId,
           p_motivo: reason,
           p_force: true,
-        });
+        } as any);
         if (error) {
           console.error('[Presence] Error in cascade cleanup:', error);
         } else {
