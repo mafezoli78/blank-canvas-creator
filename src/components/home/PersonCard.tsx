@@ -283,9 +283,30 @@ export function PersonCard({
               {/* CONTEÚDO */}
               <div className="flex-1 flex flex-col justify-between p-4">
                 <div>
-                  <div className="font-semibold text-base">
-                    {person.profile.nome?.split(' ')[0] || person.profile.nome}
-                    {age !== null && <span className="text-muted-foreground font-normal">, {age}</span>}
+                  <div className="flex items-start justify-between">
+                    <div className="font-semibold text-base">
+                      {person.profile.nome?.split(' ')[0] || person.profile.nome}
+                      {age !== null && <span className="text-muted-foreground font-normal">, {age}</span>}
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 -mt-1 -mr-2">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowReportModal(true);
+                          }}
+                        >
+                          <Flag className="h-4 w-4 mr-2" />
+                          Denunciar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                   {person.assuntoAtual ? (
