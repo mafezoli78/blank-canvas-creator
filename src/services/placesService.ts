@@ -106,15 +106,20 @@ export const placesService = {
     const { latitude, longitude, query, limit = 20 } = params;
 
     // Search by name always uses max radius directly (no progressive expansion)
-    const { data, error } = await supabase.functions.invoke('search-places', {
-      body: { 
-        latitude, 
-        longitude, 
-        radius: MAX_SEARCH_RADIUS_METERS,
-        limit,
-        query 
-      },
-    });
+   const { data: { session } } = await supabase.auth.getSession();
+
+const { data, error } = await supabase.functions.invoke('search-places', {
+  body: { 
+    latitude, 
+    longitude, 
+    radius: MAX_SEARCH_RADIUS_METERS,
+    limit,
+    query 
+  },
+  headers: session?.access_token
+    ? { Authorization: `Bearer ${session.access_token}` }
+    : undefined,
+});
 
     if (error) {
       console.error('Error searching places by name:', error);
