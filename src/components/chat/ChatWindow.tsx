@@ -31,12 +31,11 @@ export function ChatWindow({
   const [inputValue, setInputValue] = useState('');
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
   const handleSend = async () => {
     if (!inputValue.trim() || sending) return;
