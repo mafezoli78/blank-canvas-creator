@@ -10,13 +10,7 @@ import { NormalizedWave, NormalizedConversation, NormalizedMute, NormalizedBlock
 import { HandshakeIcon } from '@/components/icons/HandshakeIcon';
 import { SwipeActions } from '@/components/home/SwipeActions';
 import { calculateAge } from '@/utils/date';
-import { MoreVertical, Flag } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Flag } from 'lucide-react';
 import { ReportModal } from '@/components/shared/ReportModal';
 
 const BUTTON_WIDTH = 140;
@@ -57,7 +51,6 @@ export function PersonCard({
   const [photoOpen, setPhotoOpen] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
-  // Calcular estado de interação diretamente via interactionRules (canônico)
   const { state, button, isVisible } = useMemo(() => {
     if (!user?.id || !placeId) {
       return {
@@ -93,7 +86,6 @@ export function PersonCard({
     b => b.user_id === user?.id && b.blocked_user_id === person.id
   );
 
-  // Swipe state
   const [translateX, setTranslateX] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const touchRef = useRef<{
@@ -130,9 +122,7 @@ export function PersonCard({
     const deltaY = currentY - touch.startY;
 
     if (!touch.directionLocked) {
-      if (Math.abs(deltaX) < DIRECTION_THRESHOLD && Math.abs(deltaY) < DIRECTION_THRESHOLD) {
-        return;
-      }
+      if (Math.abs(deltaX) < DIRECTION_THRESHOLD && Math.abs(deltaY) < DIRECTION_THRESHOLD) return;
       touch.directionLocked = Math.abs(deltaY) > Math.abs(deltaX) ? 'vertical' : 'horizontal';
     }
 
@@ -140,9 +130,7 @@ export function PersonCard({
 
     e.preventDefault();
 
-    if (openCardId !== person.id) {
-      onSwipeOpen(person.id);
-    }
+    if (openCardId !== person.id) onSwipeOpen(person.id);
 
     const newTranslateX = Math.max(-BUTTON_WIDTH, Math.min(0, touch.startTranslateX + deltaX));
     setTranslateX(newTranslateX);
@@ -168,9 +156,7 @@ export function PersonCard({
     touchRef.current = null;
   }, [translateX, person.id, onSwipeOpen]);
 
-  if (!isVisible) {
-    return null;
-  }
+  if (!isVisible) return null;
 
   const age = person.profile.data_nascimento
     ? calculateAge(person.profile.data_nascimento)
@@ -191,7 +177,6 @@ export function PersonCard({
           navigate(`/chat?conversationId=${button.conversationId}`);
         }
         break;
-      case 'none':
       default:
         break;
     }
@@ -205,10 +190,6 @@ export function PersonCard({
         return 'bg-katu-green text-white hover:bg-katu-green/90';
       case InteractionState.CHAT_ACTIVE:
         return 'bg-primary text-primary-foreground hover:bg-primary/90';
-      case InteractionState.WAVE_SENT:
-      case InteractionState.ENDED_BY_ME:
-      case InteractionState.ENDED_BY_OTHER:
-      case InteractionState.MUTED:
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -228,121 +209,116 @@ export function PersonCard({
   );
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
-      <SwipeActions
-        personId={person.id}
-        isMuted={isMutedByMe}
-        isBlocked={isBlockedByMe}
-        onMute={async () => {
-          await onMute(person.id);
-          setIsAnimating(true);
-          setTranslateX(0);
-          onSwipeOpen(null);
-        }}
-        onBlock={async () => {
-          await onBlock(person.id);
-          setIsAnimating(true);
-          setTranslateX(0);
-          onSwipeOpen(null);
-        }}
-      />
+    <>
+      <div className="relative overflow-hidden rounded-lg">
+        <SwipeActions
+          personId={person.id}
+          isMuted={isMutedByMe}
+          isBlocked={isBlockedByMe}
+          onMute={async () => {
+            await onMute(person.id);
+            setIsAnimating(true);
+            setTranslateX(0);
+            onSwipeOpen(null);
+          }}
+          onBlock={async () => {
+            await onBlock(person.id);
+            setIsAnimating(true);
+            setTranslateX(0);
+            onSwipeOpen(null);
+          }}
+        />
 
-      <div
-        style={{
-          transform: `translateX(${translateX}px)`,
-          transition: isAnimating ? 'transform 200ms ease-out' : 'none',
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <Card className="border-0 shadow-sm overflow-hidden">
-          <CardContent className="p-0">
-            <div className="flex h-full">
-              {/* FOTO DO MOMENTO - apenas selfie de check-in */}
-              <div
-                className="w-[36%] flex items-center p-2.5 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (person.checkinSelfieUrl) setPhotoOpen(true);
-                }}
-              >
-                {person.checkinSelfieUrl ? (
-                  <img
-                    src={person.checkinSelfieUrl}
-                    alt={person.profile.nome || ''}
-                    className="w-full aspect-square object-cover rounded-lg"
-                  />
-                ) : (
-                  <div className="w-full aspect-square flex items-center justify-center font-bold text-xl bg-muted text-muted-foreground rounded-lg">
-                    {initials}
-                  </div>
-                )}
-              </div>
-
-              {/* CONTEÚDO */}
-              <div className="flex-1 flex flex-col justify-between p-4">
-                <div>
-                  <div className="flex items-start justify-between">
-                    <div className="font-semibold text-base">
-                      {person.profile.nome?.split(' ')[0] || person.profile.nome}
-                      {age !== null && <span className="text-muted-foreground font-normal">, {age}</span>}
+        <div
+          style={{
+            transform: `translateX(${translateX}px)`,
+            transition: isAnimating ? 'transform 200ms ease-out' : 'none',
+          }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <Card className="border-0 shadow-sm overflow-hidden">
+            <CardContent className="p-0">
+              <div className="flex h-full">
+                {/* FOTO DO MOMENTO */}
+                <div
+                  className="w-[36%] flex items-center p-2.5 cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (person.checkinSelfieUrl) setPhotoOpen(true);
+                  }}
+                >
+                  {person.checkinSelfieUrl ? (
+                    <img
+                      src={person.checkinSelfieUrl}
+                      alt={person.profile.nome || ''}
+                      className="w-full aspect-square object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full aspect-square flex items-center justify-center font-bold text-xl bg-muted text-muted-foreground rounded-lg">
+                      {initials}
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 -mt-1 -mr-2">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowReportModal(true);
-                          }}
-                        >
-                          <Flag className="h-4 w-4 mr-2" />
-                          Denunciar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  )}
+                </div>
+
+                {/* CONTEÚDO */}
+                <div className="flex-1 flex flex-col justify-between p-4">
+                  <div>
+                    <div className="flex items-start justify-between">
+                      <div className="font-semibold text-base">
+                        {person.profile.nome?.split(' ')[0] || person.profile.nome}
+                        {age !== null && (
+                          <span className="text-muted-foreground font-normal">, {age}</span>
+                        )}
+                      </div>
+                      {/* Botão denúncia — fora do overflow-hidden para não ser cortado */}
+                      <button
+                        className="text-muted-foreground hover:text-destructive p-1 -mt-1 -mr-1 rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowReportModal(true);
+                        }}
+                        aria-label="Denunciar"
+                      >
+                        <Flag className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {person.assuntoAtual ? (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <span className="font-medium text-foreground">Aqui:</span> {person.assuntoAtual}
+                      </p>
+                    ) : person.profile.bio ? (
+                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                        <span className="font-medium text-foreground">Sobre mim:</span> {person.profile.bio}
+                      </p>
+                    ) : null}
                   </div>
 
-                  {person.assuntoAtual ? (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      <span className="font-medium text-foreground">Aqui:</span> {person.assuntoAtual}
-                    </p>
-                  ) : person.profile.bio ? (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      <span className="font-medium text-foreground">Sobre mim:</span> {person.profile.bio}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="mt-3">
-                  {ctaButton}
+                  <div className="mt-3">{ctaButton}</div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Modal de ampliação da foto */}
+        <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogTitle className="sr-only">Foto ampliada</DialogTitle>
+            {person.checkinSelfieUrl && (
+              <img
+                src={person.checkinSelfieUrl}
+                alt={person.profile.nome || ''}
+                className="w-full max-w-md mx-auto aspect-square object-cover rounded-lg"
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Modal de ampliação da foto do momento */}
-      <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogTitle className="sr-only">Foto ampliada</DialogTitle>
-          {person.checkinSelfieUrl && (
-            <img
-              src={person.checkinSelfieUrl}
-              alt={person.profile.nome || ''}
-              className="w-full max-w-md mx-auto aspect-square object-cover rounded-lg"
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
+      {/* ReportModal fora do overflow-hidden */}
       <ReportModal
         open={showReportModal}
         onClose={() => setShowReportModal(false)}
@@ -350,6 +326,6 @@ export function PersonCard({
         reportedUserName={person.profile.nome?.split(' ')[0] || 'Usuário'}
         contexto="home"
       />
-    </div>
+    </>
   );
 }
