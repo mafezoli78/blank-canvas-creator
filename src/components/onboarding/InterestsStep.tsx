@@ -1,13 +1,8 @@
-import { Badge } from '@/components/ui/badge';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useInterestCategories } from '@/hooks/useInterestCategories';
-import { Check, Loader2 } from 'lucide-react';
-
-const MIN_INTERESTS = 3;
-const MAX_INTERESTS = 10;
-const MAX_PER_CATEGORY = 4;
-const MIN_CATEGORIES = 2;
+import { ArrowLeft, Loader2 } from 'lucide-react';
 
 interface InterestsStepProps {
   selectedInterests: string[];
@@ -16,51 +11,51 @@ interface InterestsStepProps {
   onBack: () => void;
 }
 
+const NONE_ID = '__none__';
+
 export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onBack }: InterestsStepProps) {
   const { categories, loading } = useInterestCategories();
+  const [categoryIndex, setCategoryIndex] = useState(0);
 
-  const getCategoryCount = (categoryId: string) => {
-    const category = categories.find(c => c.id === categoryId);
-    if (!category) return 0;
-    return category.interests.filter(i => selectedInterests.includes(i.id)).length;
-  };
+  const currentCategory = categories[categoryIndex];
 
-  const getSelectedCategoriesCount = () => {
-    const selectedCategories = new Set<string>();
-    categories.forEach(category => {
-      category.interests.forEach(interest => {
-        if (selectedInterests.includes(interest.id)) {
-          selectedCategories.add(category.id);
-        }
-      });
-    });
-    return selectedCategories.size;
-  };
+  const getSelectedInCategory = useCallback((catIndex: number) => {
+    if (!categories[catIndex]) return [];
+    return categories[catIndex].interests
+      .filter(i => selectedInterests.includes(i.id))
+      .map(i => i.id);
+  }, [categories, selectedInterests]);
 
-  const validateSelection = () => {
-    if (selectedInterests.length < MIN_INTERESTS) {
-      return `Selecione pelo menos ${MIN_INTERESTS} interesses`;
+  const handleSelectTag = useCallback((interestId: string) => {
+    const previousInCategory = getSelectedInCategory(categoryIndex);
+
+    // Deselect previous selections in this category
+    previousInCategory.forEach(id => onToggleInterest(id));
+
+    // If not "none", select the new tag
+    if (interestId !== NONE_ID) {
+      onToggleInterest(interestId);
     }
-    if (getSelectedCategoriesCount() < MIN_CATEGORIES) {
-      return `Escolha interesses de pelo menos ${MIN_CATEGORIES} categorias diferentes`;
+
+    // Advance after brief delay for visual feedback
+    setTimeout(() => {
+      if (categoryIndex < categories.length - 1) {
+        setCategoryIndex(prev => prev + 1);
+      } else {
+        onNext();
+      }
+    }, 200);
+  }, [categoryIndex, categories.length, getSelectedInCategory, onToggleInterest, onNext]);
+
+  const handleBack = useCallback(() => {
+    if (categoryIndex > 0) {
+      setCategoryIndex(prev => prev - 1);
+    } else {
+      onBack();
     }
-    return null;
-  };
+  }, [categoryIndex, onBack]);
 
-  const handleToggle = (interestId: string, categoryId: string) => {
-    const isSelected = selectedInterests.includes(interestId);
-    
-    if (!isSelected) {
-      if (selectedInterests.length >= MAX_INTERESTS) return;
-      if (getCategoryCount(categoryId) >= MAX_PER_CATEGORY) return;
-    }
-    
-    onToggleInterest(interestId);
-  };
-
-  const validationError = validateSelection();
-
-  if (loading) {
+  if (loading || categories.length === 0) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
@@ -70,76 +65,63 @@ export function InterestsStep({ selectedInterests, onToggleInterest, onNext, onB
     );
   }
 
+  const selectedInCurrent = getSelectedInCategory(categoryIndex);
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Seus interesses</CardTitle>
-        <CardDescription>
-          Selecione de {MIN_INTERESTS} a {MAX_INTERESTS} interesses (máx. {MAX_PER_CATEGORY} por categoria)
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {categories.map((category) => {
-          const catCount = getCategoryCount(category.id);
-          return (
-            <div key={category.id}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-foreground">{category.name}</h3>
-                {catCount > 0 && (
-                  <span className="text-xs text-muted-foreground">{catCount}/{MAX_PER_CATEGORY}</span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {category.interests.map((interest) => {
-                  const isSelected = selectedInterests.includes(interest.id);
-                  const categoryFull = catCount >= MAX_PER_CATEGORY && !isSelected;
-                  const maxReached = selectedInterests.length >= MAX_INTERESTS && !isSelected;
-                  const disabled = categoryFull || maxReached;
-
-                  return (
-                    <Badge
-                      key={interest.id}
-                      variant={isSelected ? 'default' : 'outline'}
-                      className={`cursor-pointer transition-all py-2 px-3 ${
-                        isSelected
-                          ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
-                          : disabled
-                            ? 'opacity-40 cursor-not-allowed'
-                            : 'hover:bg-muted'
-                      }`}
-                      onClick={() => !disabled && handleToggle(interest.id, category.id)}
-                    >
-                      {interest.name}
-                      {isSelected && <Check className="ml-1 h-3 w-3" />}
-                    </Badge>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            {selectedInterests.length} de {MIN_INTERESTS}–{MAX_INTERESTS} selecionados
-          </p>
-          {validationError && (
-            <p className="text-sm text-destructive">{validationError}</p>
-          )}
+      <CardContent className="pt-6 space-y-6">
+        {/* Progress bar */}
+        <div>
+          <div className="w-full bg-muted rounded-full h-1.5 mb-2">
+            <div
+              className="bg-accent h-1.5 rounded-full transition-all"
+              style={{ width: `${((categoryIndex + 1) / categories.length) * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">{categoryIndex + 1} de {categories.length}</p>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={onBack} className="flex-1">
-            Voltar
-          </Button>
-          <Button
-            onClick={onNext}
-            className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-            disabled={!!validationError}
+        {/* Category title */}
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">{currentCategory.name}</h2>
+          <p className="text-sm text-muted-foreground">Escolha o que mais combina com você</p>
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2">
+          {currentCategory.interests.map((interest) => {
+            const isSelected = selectedInCurrent.includes(interest.id);
+            return (
+              <button
+                key={interest.id}
+                onClick={() => handleSelectTag(interest.id)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isSelected
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-muted text-foreground hover:bg-muted/80'
+                }`}
+              >
+                {interest.name}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => handleSelectTag(NONE_ID)}
+            className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              selectedInCurrent.length === 0
+                ? 'bg-accent text-accent-foreground'
+                : 'bg-muted text-foreground hover:bg-muted/80'
+            }`}
           >
-            Continuar
-          </Button>
+            Nenhuma delas
+          </button>
         </div>
+
+        {/* Back button */}
+        <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1">
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
       </CardContent>
     </Card>
   );
