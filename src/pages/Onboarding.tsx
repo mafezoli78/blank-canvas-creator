@@ -145,16 +145,6 @@ export default function Onboarding() {
     }
   };
 
-  // Helper to get interest name by ID
-  const getInterestName = (interestId: string): string => {
-    for (const cat of categories) {
-      const found = cat.interests.find(i => i.id === interestId);
-      if (found) return found.name;
-    }
-    return interestId;
-  };
-
-  return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-primary p-6 flex items-center justify-center">
