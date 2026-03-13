@@ -66,7 +66,7 @@ export function ChatWindow({
   // Foto do momento: apenas checkin_selfie_url
   const momentPhoto = conversation.otherUser.checkin_selfie_url;
 
-  return <div className="flex flex-col h-full overflow-hidden">
+  return <div className="flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
       {/* Header - always visible at top */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center gap-3">
