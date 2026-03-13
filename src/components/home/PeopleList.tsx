@@ -39,6 +39,14 @@ export function PeopleList({
   onBlock,
   onRefresh,
 }: PeopleListProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    await onRefresh();
+    setTimeout(() => setIsRefreshing(false), 600);
+  }, [isRefreshing, onRefresh]);
   return (
     <>
       {/* Header */}
