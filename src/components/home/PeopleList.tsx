@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PersonCard } from '@/components/home/PersonCard';
 import { RefreshCw, Users } from 'lucide-react';
+import { useState, useCallback } from 'react';
 import type { PersonNearby } from '@/hooks/usePeopleNearby';
 import type { NormalizedWave, NormalizedConversation, NormalizedMute, NormalizedBlock } from '@/hooks/useInteractionData';
 
