@@ -16,19 +16,18 @@ import { ReportModal } from '@/components/shared/ReportModal';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// Alturas fixas — mesmas usadas pelo BottomNav (h-16 = 64px) e este header (p-4 + avatar = 73px)
+const HEADER_HEIGHT = 73;
+const NAV_HEIGHT = 64;
+const INPUT_HEIGHT = 72;
+
 interface ChatWindowProps {
   conversation: ConversationWithDetails;
   onClose: () => void;
   onEndChat: () => void;
-  showNav?: boolean;
 }
 
-export function ChatWindow({
-  conversation,
-  onClose,
-  onEndChat,
-  showNav = true,
-}: ChatWindowProps) {
+export function ChatWindow({ conversation, onClose, onEndChat }: ChatWindowProps) {
   const { user } = useAuth();
   const { messages, loading, sending, sendMessage } = useMessages(conversation.id);
   const [inputValue, setInputValue] = useState('');
@@ -45,9 +44,7 @@ export function ChatWindow({
     const content = inputValue;
     setInputValue('');
     const { error } = await sendMessage(content);
-    if (error) {
-      setInputValue(content);
-    }
+    if (error) setInputValue(content);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -68,15 +65,13 @@ export function ChatWindow({
 
   const momentPhoto = conversation.otherUser.checkin_selfie_url;
 
-  // Desconta a altura do BottomNav (80px = pb-20) quando ele está visível
-  const heightStyle = showNav
-  ? { height: 'calc(100dvh - 4rem - env(safe-area-inset-bottom, 0px))' }
-  : { height: '100dvh' };
-
   return (
-    <div className="flex flex-col overflow-hidden" style={heightStyle}>
-      {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between p-4 border-b bg-card">
+    <>
+      {/* Header fixo no topo */}
+      <div
+        className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 border-b bg-card"
+        style={{ height: HEADER_HEIGHT }}
+      >
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="h-9 w-9 -ml-2" onClick={onClose}>
             <ArrowLeft className="h-5 w-5" />
@@ -126,8 +121,14 @@ export function ChatWindow({
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4">
+      {/* Área de mensagens — entre header e input */}
+      <div
+        className="fixed left-0 right-0 overflow-y-auto p-4"
+        style={{
+          top: HEADER_HEIGHT,
+          bottom: NAV_HEIGHT + INPUT_HEIGHT,
+        }}
+      >
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -151,11 +152,7 @@ export function ChatWindow({
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">{message.conteudo}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      }`}
-                    >
+                    <p className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
                       {formatDistanceToNow(new Date(message.criado_em), {
                         addSuffix: true,
                         locale: ptBR,
@@ -170,9 +167,15 @@ export function ChatWindow({
         )}
       </div>
 
-      {/* Input */}
-      <div className="flex-shrink-0 p-4 border-t bg-card">
-        <div className="flex items-center gap-2">
+      {/* Input fixo acima do nav */}
+      <div
+        className="fixed left-0 right-0 px-4 border-t bg-card flex items-center"
+        style={{
+          bottom: NAV_HEIGHT,
+          height: INPUT_HEIGHT,
+        }}
+      >
+        <div className="flex items-center gap-2 w-full">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -195,6 +198,6 @@ export function ChatWindow({
         contexto="chat"
         conversationId={conversation.id}
       />
-    </div>
+    </>
   );
 }
