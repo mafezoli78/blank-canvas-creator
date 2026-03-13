@@ -37,6 +37,7 @@ export function ChatWindow({
   } = useMessages(conversation.id);
   const [inputValue, setInputValue] = useState('');
   const [showEndConfirm, setShowEndConfirm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
