@@ -77,7 +77,6 @@ export function useHomeActions({
 
     if (existingBlock) {
       const { error } = await supabase.rpc('unblock_user', {
-        p_user_id: user.id,
         p_blocked_user_id: targetUserId,
       });
       if (error) {

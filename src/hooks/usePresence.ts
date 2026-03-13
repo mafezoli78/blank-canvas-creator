@@ -340,7 +340,6 @@ export function usePresence() {
     const promise = (async () => {
       try {
         const { data: newPresenceId, error } = await supabase.rpc('activate_presence', {
-          p_user_id: user.id,
           p_place_id: placeId,
           p_intention_id: intentionId,
           p_assunto_atual: assuntoAtual?.trim() || null,

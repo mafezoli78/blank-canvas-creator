@@ -90,7 +90,7 @@ export function usePresenceGPS({
         p_place_id: place.id,
         p_motivo: 'gps_exit',
         p_force: false,
-      });
+      } as any);
 
       if (error) {
         console.error('[GPS] Backend rejected GPS exit:', error);
