@@ -60,10 +60,11 @@ export function PeopleList({
         <Button
           variant="ghost"
           size="sm"
-          onClick={onRefresh}
+          onClick={handleRefresh}
+          disabled={isRefreshing}
           className="h-9 w-9 p-0 rounded-lg"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className={`h-4 w-4 transition-transform ${isRefreshing ? 'animate-spin' : ''}`} />
         </Button>
       </div>
 
