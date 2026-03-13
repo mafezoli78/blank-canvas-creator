@@ -270,60 +270,9 @@ export default function Onboarding() {
           <InterestsStep
             selectedInterests={selectedInterests}
             onToggleInterest={toggleInterest}
-            onNext={handleNextStep}
+            onNext={handleComplete}
             onBack={() => setStep(1)}
           />
-        )}
-
-        {/* Step 3: Review */}
-        {step === 3 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tudo pronto!</CardTitle>
-              <CardDescription>Confira seu perfil antes de continuar</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-lg overflow-hidden bg-primary flex items-center justify-center shrink-0">
-                  {avatarPreview ? (
-                    <img src={avatarPreview} alt="Avatar" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-primary-foreground text-xl font-semibold">
-                      {nome[0].toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{nome}</h3>
-                  {bio && <p className="text-sm text-muted-foreground">{bio}</p>}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-sm font-medium mb-2">Seus interesses:</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedInterests.map((interestId) => (
-                    <Badge key={interestId} variant="secondary">
-                      {getInterestName(interestId)}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
-                  Voltar
-                </Button>
-                <Button
-                  onClick={handleComplete}
-                  className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-                  disabled={loading}
-                >
-                  {loading ? 'Salvando...' : 'Começar a usar'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         )}
       </div>
     </div>
